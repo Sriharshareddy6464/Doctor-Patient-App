@@ -21,10 +21,71 @@ model User {
   refreshToken String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  doctorProfile  DoctorProfile?
+  patientProfile PatientProfile?
+  timeSlots      TimeSlot[]
+}
+
+model DoctorProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  specializations String[] @default([])
+  experience      Int      @default(0) // years of experience
+  qualifications  String[] @default([])
+  bio             String?
+  phone           String?
+  consultationFee Float?
+  availableFrom   String? // e.g. "09:00"
+  availableTo     String? // e.g. "17:00"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PatientProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  dateOfBirth      DateTime?
+  gender           Gender?
+  bloodGroup       String?
+  phone            String?
+  address          String?
+  emergencyContact String?
+  allergies        String[]  @default([])
+  medicalHistory   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Role {
   PATIENT
   DOCTOR
   ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+model TimeSlot {
+  id        String  @id @default(uuid())
+  doctorId  String
+  doctor    User    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  date      String // "YYYY-MM-DD"
+  startTime String // "HH:mm"
+  endTime   String // "HH:mm"
+  isBooked  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([doctorId, date, startTime])
 }
