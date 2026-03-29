@@ -99,3 +99,27 @@ export const getAllDoctors = async (req: Request, res: Response) => {
     });
   }
 };
+
+/**
+ * GET /patient/doctors/:id
+ * Get a specific doctor's details
+ */
+export const getDoctorById = async (req: Request, res: Response) => {
+  try {
+    const doctorId = req.params.id as string;
+    if (!doctorId) {
+      return res.status(400).json({ success: false, message: "Doctor ID is required" });
+    }
+
+    const doctor = await doctorService.getDoctorProfile(doctorId);
+    return res.status(200).json({
+      success: true,
+      data: doctor,
+    });
+  } catch (err: any) {
+    return res.status(err.status || 500).json({
+      success: false,
+      message: err.message || "Internal server error",
+    });
+  }
+};

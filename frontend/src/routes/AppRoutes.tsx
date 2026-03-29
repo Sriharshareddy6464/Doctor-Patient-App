@@ -11,7 +11,10 @@ const Home = lazy(() => import('../pages/Home'));
 
 // Dashboards (can add more later)
 const PatientDashboard = lazy(() => import('../pages/patient/PatientDashboard'));
+const DoctorsList = lazy(() => import('../pages/patient/DoctorsList'));
+const DoctorDetails = lazy(() => import('../pages/patient/DoctorDetails'));
 const DoctorDashboard = lazy(() => import('../pages/doctor/DoctorDashboard'));
+const DoctorProfile = lazy(() => import('../pages/doctor/DoctorProfile'));
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'));
 
 // Loading fallback component
@@ -37,10 +40,13 @@ export const AppRoutes = () => {
           {/* Role specific routes */}
           <Route element={<ProtectedRoute allowedRoles={[Role.PATIENT]} />}>
             <Route path="/patient-dashboard" element={<PatientDashboard />} />
+            <Route path="/patient-dashboard/doctors" element={<DoctorsList />} />
+            <Route path="/patient-dashboard/doctor/:id" element={<DoctorDetails />} />
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={[Role.DOCTOR]} />}>
             <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
+            <Route path="/doctor-dashboard/profile" element={<DoctorProfile />} />
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={[Role.ADMIN]} />}>

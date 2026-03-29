@@ -1,4 +1,5 @@
 import { useAuth } from '../../context/AuthContext';
+import { Link } from 'react-router-dom';
 
 const PatientDashboard = () => {
   const { user } = useAuth();
@@ -16,6 +17,10 @@ const PatientDashboard = () => {
       </div>
       
       <div className="dashboard-grid">
+        <Link to="/patient-dashboard/doctors" className="glass-panel p-6 rounded-xl min-h-[150px] shadow-sm flex flex-col justify-center text-center hover:bg-white/80 transition-colors cursor-pointer border-blue-200">
+            <h3 className="font-semibold text-lg text-blue-700">Find a Doctor</h3>
+            <p className="text-gray-500 mt-2">Browse the directory and view doctor profiles.</p>
+        </Link>
         <div className="glass-panel p-6 rounded-xl min-h-[150px] shadow-sm flex flex-col justify-center text-center">
             <h3 className="font-semibold text-lg text-gray-900">Upcoming Appointments</h3>
             <p className="text-gray-500 mt-2">No appointments scheduled.</p>
@@ -23,10 +28,6 @@ const PatientDashboard = () => {
         <div className="glass-panel p-6 rounded-xl min-h-[150px] shadow-sm flex flex-col justify-center text-center">
             <h3 className="font-semibold text-lg text-gray-900">Medical Records</h3>
             <p className="text-gray-500 mt-2">View securely linked records.</p>
-        </div>
-        <div className="glass-panel p-6 rounded-xl min-h-[150px] shadow-sm flex flex-col justify-center text-center">
-            <h3 className="font-semibold text-lg text-gray-900">Prescriptions</h3>
-            <p className="text-gray-500 mt-2">Manage your current prescriptions.</p>
         </div>
       </div>
     </div>

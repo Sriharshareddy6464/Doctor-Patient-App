@@ -1,4 +1,5 @@
 import { useAuth } from '../../context/AuthContext';
+import { Link } from 'react-router-dom';
 
 const DoctorDashboard = () => {
   const { user } = useAuth();
@@ -16,18 +17,18 @@ const DoctorDashboard = () => {
       </div>
       
       <div className="dashboard-grid">
-        <div className="glass-panel p-6 rounded-xl min-h-[150px] shadow-sm flex flex-col justify-center text-center">
+        <div className="glass-panel p-6 rounded-xl min-h-[150px] shadow-sm flex flex-col justify-center text-center hover:bg-white/80 transition-colors cursor-pointer">
             <h3 className="font-semibold text-lg text-gray-900">Today's Patients</h3>
             <p className="text-gray-500 mt-2">You have 0 patients today.</p>
         </div>
-        <div className="glass-panel p-6 rounded-xl min-h-[150px] shadow-sm flex flex-col justify-center text-center">
+        <div className="glass-panel p-6 rounded-xl min-h-[150px] shadow-sm flex flex-col justify-center text-center hover:bg-white/80 transition-colors cursor-pointer">
             <h3 className="font-semibold text-lg text-gray-900">Schedule</h3>
             <p className="text-gray-500 mt-2">Configure availability slots.</p>
         </div>
-        <div className="glass-panel p-6 rounded-xl min-h-[150px] shadow-sm flex flex-col justify-center text-center">
+        <Link to="/doctor-dashboard/profile" className="glass-panel p-6 rounded-xl min-h-[150px] shadow-sm flex flex-col justify-center text-center hover:bg-white/80 transition-colors cursor-pointer">
             <h3 className="font-semibold text-lg text-gray-900">Profile Settings</h3>
             <p className="text-gray-500 mt-2">Update bio & specialties.</p>
-        </div>
+        </Link>
       </div>
     </div>
   );
