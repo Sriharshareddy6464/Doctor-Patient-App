@@ -22,7 +22,7 @@ export const MainLayout = () => {
                 <div className="p-2 bg-orange-100 rounded-xl group-hover:scale-110 transition-transform">
                    <Activity className="h-6 w-6 text-primary" />
                 </div>
-                Aushadhi
+                Docco360
               </Link>
             </div>
             
@@ -65,7 +65,7 @@ export const MainLayout = () => {
         <div className="max-w-6xl mx-auto px-4 text-center flex flex-col sm:flex-row items-center justify-between text-zinc-500 font-medium text-sm gap-2">
            <div className="flex items-center gap-2">
              <Activity className="h-4 w-4 text-primary" />
-             <span>© 2026 Aushadhi Platform.</span>
+             <span>© 2026 Docco360 Platform.</span>
            </div>
            <div>Trusted by 25,000+ Teams</div>
         </div>

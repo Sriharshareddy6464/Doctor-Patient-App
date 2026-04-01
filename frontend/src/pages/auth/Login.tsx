@@ -53,13 +53,13 @@ const Login = () => {
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-16 text-primary">
               <Activity className="h-8 w-8" />
-              <span className="text-2xl font-bold tracking-tight text-zinc-900">Aushadhi.</span>
+              <span className="text-2xl font-bold tracking-tight text-zinc-900">Docco360.</span>
             </div>
             <h1 className="text-5xl font-extrabold tracking-tight mb-6 leading-tight text-zinc-900">
               The Future of<br />Decision-Making<br />Made Simple
             </h1>
             <p className="text-lg text-zinc-600 max-w-md leading-relaxed">
-              Crafted for doctors and patients alike, Aushadhi offers an unrivaled innovative healthcare platform.
+              Crafted for doctors and patients alike, Docco360 offers an unrivaled innovative healthcare platform.
             </p>
           </div>
 

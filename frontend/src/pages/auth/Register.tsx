@@ -59,13 +59,13 @@ const Register = () => {
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-16 text-primary">
               <Activity className="h-8 w-8" />
-              <span className="text-2xl font-bold tracking-tight text-zinc-900">Aushadhi.</span>
+              <span className="text-2xl font-bold tracking-tight text-zinc-900">Docco360.</span>
             </div>
             <h1 className="text-5xl font-extrabold tracking-tight mb-6 leading-tight text-zinc-900">
               A new era of<br />connected health.
             </h1>
             <p className="text-lg text-zinc-600 max-w-md leading-relaxed font-medium">
-              Start your journey with Aushadhi. Designed for seamless interactions and powerful insights.
+              Start your journey with Docco360. Designed for seamless interactions and powerful insights.
             </p>
           </div>
 

@@ -58,7 +58,7 @@ const DoctorsList = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {doctors.length === 0 ? (
           <div className="col-span-full text-center p-16 bg-white rounded-3xl shadow-sm border border-zinc-200">
-            <p className="text-zinc-500 font-medium text-lg">No specialists are currently available on Aushadhi.</p>
+            <p className="text-zinc-500 font-medium text-lg">No specialists are currently available on Docco360.</p>
           </div>
         ) : (
           doctors.map((doc) => (
