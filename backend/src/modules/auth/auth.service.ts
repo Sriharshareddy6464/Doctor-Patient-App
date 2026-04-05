@@ -226,7 +226,7 @@ export const seedAdmin = async () => {
     return;
   }
 
-  const hashedPassword = await hashPassword("Admin@1234");
+  const hashedPassword = await hashPassword(env.ADMIN_PASSWORD);
 
   await prisma.user.create({
     data: {
