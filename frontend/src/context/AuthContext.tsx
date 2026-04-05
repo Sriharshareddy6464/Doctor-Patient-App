@@ -1,16 +1,7 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { type User} from '../types/auth';
+import { useState, useEffect, type ReactNode } from 'react';
+import { type User } from '../types/auth';
 import { authService } from '../services/auth.service';
-
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (userData: User, accessToken: string, refreshToken: string) => void;
-  logout: () => void;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { AuthContext } from './auth-context';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -24,13 +15,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           const res = await authService.getMe();
           if (res.success && res.data) {
-            setUser(res.data.user || res.data); // depending on backend structure
+            const userData = (res.data as { user?: typeof res.data }).user ?? res.data;
+            setUser(userData as User);
             setIsAuthenticated(true);
           }
-        } catch (error) {
-          console.error("Auth check failed:", error);
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
+        } catch (error: unknown) {
+          const status = (error as { response?: { status?: number } })?.response?.status;
+          if (!status || status === 401) {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+          } else {
+            console.error('Auth check failed with unexpected error:', error);
+          }
         }
       }
       setIsLoading(false);
@@ -41,9 +37,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = (userData: User, accessToken: string, refreshToken: string) => {
     localStorage.setItem('accessToken', accessToken);
-    if (refreshToken) {
-      localStorage.setItem('refreshToken', refreshToken);
-    }
+    if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
     setUser(userData);
     setIsAuthenticated(true);
   };
@@ -66,12 +60,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 };

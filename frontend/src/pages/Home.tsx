@@ -23,7 +23,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] font-sans text-zinc-900 border-x max-w-[1400px] mx-auto border-zinc-200/50 shadow-2xl overflow-x-hidden">
+    <div className="min-h-screen bg-[#fafafa] font-sans text-zinc-900 border-x max-w-350 mx-auto border-zinc-200/50 shadow-2xl overflow-x-hidden">
       
       {/* Navbar */}
       <nav className="flex items-center justify-between px-6 lg:px-12 py-5 bg-white/80 backdrop-blur-xl sticky top-0 z-50 border-b border-zinc-100">
@@ -98,13 +98,13 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.95, rotate: 2 }}
               animate={{ opacity: 1, scale: 1, rotate: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="relative aspect-square lg:aspect-[4/3] rounded-[2.5rem] bg-white border border-zinc-200 shadow-2xl p-4 overflow-hidden"
+              className="relative aspect-square lg:aspect-4/3 rounded-[2.5rem] bg-white border border-zinc-200 shadow-2xl p-4 overflow-hidden"
             >
               <img src="/hero_image.png" alt="Doctor Consultation AI generated hero" className="w-full h-full object-cover rounded-[2rem] bg-zinc-100" />
               {/* Floating Element */}
               <motion.div 
                 animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                className="absolute bottom-10 left-[-20px] bg-white p-4 rounded-2xl shadow-xl border border-zinc-100 flex items-center gap-4"
+                className="absolute bottom-10 left-5 bg-white p-4 rounded-2xl shadow-xl border border-zinc-100 flex items-center gap-4"
               >
                 <div className="h-12 w-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center">
                   <Video className="h-6 w-6" />
@@ -237,7 +237,7 @@ export default function Home() {
                className="lg:w-1/2 relative flex justify-center"
             >
               <div className="absolute inset-0 bg-secondary/10 blur-[100px] rounded-full" />
-              <img src="/mobile_app.png" alt="Mobile App 3D Mockup" className="relative z-10 w-[300px] lg:w-[400px] object-contain drop-shadow-2xl" />
+              <img src="/mobile_app.png" alt="Mobile App 3D Mockup" className="relative z-10 w-75 lg:w-100 object-contain drop-shadow-2xl" />
             </motion.div>
           </div>
         </section>

@@ -18,13 +18,16 @@ model User {
   email        String   @unique
   password     String
   role         Role
+  isActive     Boolean  @default(true)
   refreshToken String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  doctorProfile  DoctorProfile?
-  patientProfile PatientProfile?
-  timeSlots      TimeSlot[]
+  doctorProfile       DoctorProfile?
+  patientProfile      PatientProfile?
+  timeSlots           TimeSlot[]
+  patientAppointments Appointment[]  @relation("PatientAppointments")
+  doctorAppointments  Appointment[]  @relation("DoctorAppointments")
 }
 
 model DoctorProfile {
@@ -40,6 +43,9 @@ model DoctorProfile {
   consultationFee Float?
   availableFrom   String? // e.g. "09:00"
   availableTo     String? // e.g. "17:00"
+
+  approvalStatus  DoctorApprovalStatus @default(PENDING)
+  rejectionReason String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -69,6 +75,12 @@ enum Role {
   ADMIN
 }
 
+enum DoctorApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum Gender {
   MALE
   FEMALE
@@ -84,8 +96,55 @@ model TimeSlot {
   endTime   String // "HH:mm"
   isBooked  Boolean @default(false)
 
+  appointment Appointment?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([doctorId, date, startTime])
+}
+
+model Appointment {
+  id         String @id @default(uuid())
+  timeSlotId String @unique
+  timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Cascade)
+
+  patientId String
+  patient   User   @relation("PatientAppointments", fields: [patientId], references: [id], onDelete: Cascade)
+
+  doctorId String
+  doctor   User   @relation("DoctorAppointments", fields: [doctorId], references: [id], onDelete: Cascade)
+
+  // Payment
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentId     String?       // mock payment transaction ID
+  amount        Float
+
+  // Agora Video Call
+  channelName String     @unique
+  callStatus  CallStatus @default(SCHEDULED)
+
+  status AppointmentStatus @default(CONFIRMED)
+  notes  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum AppointmentStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+}
+
+enum CallStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
 }

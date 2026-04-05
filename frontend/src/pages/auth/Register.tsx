@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../../services/auth.service';
-import { useAuth } from '../../context/AuthContext';
-import { ShieldCheck, Video, Activity, Loader2, Hospital } from 'lucide-react';
+import { Activity, Loader2, Hospital } from 'lucide-react';
 import { Role } from '../../types/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,9 +16,8 @@ const Register = () => {
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,17 +26,16 @@ const Register = () => {
 
     try {
       const res = await authService.register(formData);
-      if (res.success && res.data) {
-        login(res.data.user, res.data.accessToken, res.data.refreshToken);
-        navigate('/');
+      if (res.success) {
+        // Don't auto-login — send user to login so they authenticate explicitly
+        navigate('/login', { replace: true, state: { registered: true } });
       }
-    } catch (err: any) {
-      if (err.response?.data?.errors) {
-        const errMap = err.response.data.errors;
-        const msg = Object.values(errMap).join(', ');
-        setError(msg);
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { errors?: Record<string, string>; message?: string } } };
+      if (axiosErr.response?.data?.errors) {
+        setError(Object.values(axiosErr.response.data.errors).join(', '));
       } else {
-        setError(err.response?.data?.message || 'Failed to register');
+        setError(axiosErr.response?.data?.message || 'Failed to register. Please try again.');
       }
     } finally {
       setIsLoading(false);
@@ -50,7 +47,7 @@ const Register = () => {
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 blur-[120px] rounded-full mix-blend-multiply pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary/10 blur-[120px] rounded-full mix-blend-multiply pointer-events-none" />
 
-      <div className="container relative z-10 flex w-full max-w-6xl mx-auto rounded-3xl overflow-hidden shadow-2xl border border-zinc-200/50 bg-white min-h-[700px] my-10">
+      <div className="container relative z-10 flex w-full max-w-6xl mx-auto rounded-3xl overflow-hidden shadow-2xl border border-zinc-200/50 bg-white min-h-175 my-10">
         
         {/* Left Side: Hero Information */}
         <div className="hidden lg:flex flex-col justify-between w-1/2 bg-zinc-50 p-12 text-zinc-900 border-r border-zinc-100 relative overflow-hidden">
@@ -133,9 +130,10 @@ const Register = () => {
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
                     required
-                    minLength={6}
+                    minLength={8}
                     className="h-12 bg-white border-zinc-300 focus-visible:ring-primary rounded-xl"
                   />
+                  <p className="text-xs text-zinc-400">Min. 8 characters with uppercase, lowercase, and a number.</p>
                 </div>
 
                 <div className="space-y-1.5">

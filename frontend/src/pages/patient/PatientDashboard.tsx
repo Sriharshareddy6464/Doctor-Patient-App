@@ -1,12 +1,26 @@
-import { useAuth } from '../../context/AuthContext';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/useAuth';
 import { Link } from 'react-router-dom';
 import { Search, CalendarDays, FileText, ArrowRight, Activity } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { api } from '../../services/api';
+import { type Appointment } from '../../types/appointment';
 
 const PatientDashboard = () => {
   const { user } = useAuth();
-  
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+
+  useEffect(() => {
+    api.get('/patient/appointments')
+      .then(res => { if (res.data.success) setAppointments(res.data.data || []); })
+      .catch((err: unknown) => {
+        console.error('Failed to load appointments for dashboard:', err);
+      });
+  }, []);
+
+  const upcoming = appointments.filter(a => a.status === 'CONFIRMED');
+
   return (
     <div className="space-y-8 font-sans max-w-6xl mx-auto px-4 py-8">
       {/* Header Banner */}
@@ -26,13 +40,13 @@ const PatientDashboard = () => {
           <span className="text-sm font-bold text-zinc-700">Account Active</span>
         </div>
       </div>
-      
+
       {/* Dashboard Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        
+
         {/* Find Doctor Card */}
         <Card className="rounded-3xl border-zinc-200 shadow-sm hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all group overflow-hidden relative">
-          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 to-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-orange-400 to-primary opacity-0 group-hover:opacity-100 transition-opacity" />
           <CardHeader>
             <div className="bg-orange-50 w-12 h-12 rounded-xl flex items-center justify-center text-primary mb-4">
               <Search className="h-6 w-6" />
@@ -52,20 +66,32 @@ const PatientDashboard = () => {
         </Card>
 
         {/* Appointments Card */}
-        <Card className="rounded-3xl border-zinc-200 shadow-sm hover:shadow-xl transition-all group overflow-hidden">
+        <Card className="rounded-3xl border-zinc-200 shadow-sm hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all group overflow-hidden relative">
+          <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-orange-400 to-primary opacity-0 group-hover:opacity-100 transition-opacity"/>
           <CardHeader>
-            <div className="bg-zinc-100 w-12 h-12 rounded-xl flex items-center justify-center text-zinc-600 mb-4">
+            <div className="bg-orange-50 w-12 h-12 rounded-xl flex items-center justify-center text-primary mb-4">
               <CalendarDays className="h-6 w-6" />
             </div>
             <CardTitle className="text-xl font-bold">Appointments</CardTitle>
             <CardDescription className="text-zinc-500 text-sm leading-relaxed">
-              Manage your upcoming visits and ongoing secure video consultations.
+              Manage your upcoming visits and join secure video consultations.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="bg-zinc-50 border border-zinc-100 rounded-xl p-4 text-center">
-               <p className="text-sm font-semibold text-zinc-500">No appointments scheduled</p>
-            </div>
+            {upcoming.length > 0 ? (
+              <div className="bg-orange-50 border border-orange-100 rounded-xl p-3 text-center mb-3">
+                <p className="text-sm font-extrabold text-primary">{upcoming.length} upcoming appointment{upcoming.length !== 1 ? 's' : ''}</p>
+              </div>
+            ) : (
+              <div className="bg-zinc-50 border border-zinc-100 rounded-xl p-3 text-center mb-3">
+                <p className="text-sm font-semibold text-zinc-500">No upcoming appointments</p>
+              </div>
+            )}
+            <Button asChild className="w-full bg-primary hover:bg-orange-600 font-bold rounded-xl group-hover:translate-x-1 transition-transform">
+              <Link to="/patient-dashboard/appointments">
+                View All <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
           </CardContent>
         </Card>
 

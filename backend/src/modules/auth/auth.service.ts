@@ -84,6 +84,23 @@ export const login = async (data: LoginInput) => {
     throw { status: 401, message: "Invalid email or password" };
   }
 
+  // Block deactivated accounts
+  if (!user.isActive) {
+    throw { status: 403, message: "Your account has been deactivated. Please contact support." };
+  }
+
+  // Doctors must be approved by admin before they can log in
+  if (user.role === "DOCTOR") {
+    const profile = await prisma.doctorProfile.findUnique({ where: { userId: user.id } });
+    if (!profile || profile.approvalStatus === "PENDING") {
+      throw { status: 403, message: "Your account is pending admin approval. You will be notified once approved." };
+    }
+    if (profile.approvalStatus === "REJECTED") {
+      const reason = profile.rejectionReason ? ` Reason: ${profile.rejectionReason}` : "";
+      throw { status: 403, message: `Your doctor application was not approved.${reason}` };
+    }
+  }
+
   // Generate tokens
   const tokenPayload: TokenPayload = {
     userId: user.id,

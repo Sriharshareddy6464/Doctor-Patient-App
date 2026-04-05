@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
-import { User, Briefcase, Award, Clock, DollarSign, ChevronLeft } from 'lucide-react';
+import { User, Briefcase, Award, Clock, DollarSign, ChevronLeft, CalendarDays } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface FullDoctorProfile {
   user: {
@@ -24,6 +25,7 @@ interface FullDoctorProfile {
 
 const DoctorDetails = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [data, setData] = useState<FullDoctorProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -43,7 +45,7 @@ const DoctorDetails = () => {
         setIsLoading(false);
       }
     };
-    
+
     if (id) fetchDoctorDetails();
   }, [id]);
 
@@ -80,7 +82,7 @@ const DoctorDetails = () => {
         <div className="h-40 bg-gradient-to-r from-orange-400 to-primary relative overflow-hidden">
            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+Cgk8cmVjdCB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIGZpbGw9Im5vbmUiLz4KCTxwb2x5Z29uIHBvaW50cz0iMjAsMjAgMCwyMCAwLDAiIGZpbGw9IiNmOWNhMjQiIGZpbGwtb3BhY2l0eT0iMC4wNSIvPgo8L3N2Zz4=')] opacity-30 mix-blend-overlay" />
         </div>
-        
+
         <div className="px-10 pb-12">
           {/* Avatar & Action row */}
           <div className="relative flex justify-between items-end -mt-16 mb-8">
@@ -89,7 +91,7 @@ const DoctorDetails = () => {
                  <User size={64} className="opacity-80" />
                </div>
             </div>
-            
+
             <div className="flex gap-4 items-center">
               {profile?.consultationFee != null && (
                 <div className="bg-white text-zinc-800 border border-zinc-200 px-6 py-3 rounded-xl font-bold flex items-center shadow-lg transform -translate-y-2">
@@ -97,9 +99,15 @@ const DoctorDetails = () => {
                   <span className="text-xl">{profile.consultationFee}</span> <span className="text-zinc-400 text-sm ml-1 font-medium">/ session</span>
                 </div>
               )}
+              <Button
+                onClick={() => navigate(`/patient-dashboard/doctor/${id}/book`)}
+                className="bg-primary hover:bg-orange-600 font-bold rounded-xl px-6 h-12 shadow-lg transform -translate-y-2 flex items-center gap-2"
+              >
+                <CalendarDays size={18} /> Book Appointment
+              </Button>
             </div>
           </div>
-          
+
           <h1 className="text-4xl font-extrabold text-zinc-900 tracking-tight">Dr. {user.name}</h1>
           <p className="text-zinc-500 mt-2 font-medium">{user.email}</p>
 

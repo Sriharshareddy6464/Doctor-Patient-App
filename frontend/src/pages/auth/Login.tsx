@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { authService } from '../../services/auth.service';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { ShieldCheck, Video, Activity, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,8 +16,13 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
-  
-  const from = location.state?.from?.pathname || '/';
+
+  // Support both React Router's `state.from` and the `?returnTo=` query param
+  // that api.ts injects when a 401 forces the user to re-login.
+  const searchParams = new URLSearchParams(location.search);
+  const returnTo = searchParams.get('returnTo');
+  const from = returnTo ? decodeURIComponent(returnTo) : (location.state?.from?.pathname || '/');
+  const justRegistered = location.state?.registered === true;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,8 +35,9 @@ const Login = () => {
         login(res.data.user, res.data.accessToken, res.data.refreshToken);
         navigate(from, { replace: true });
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to login');
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      setError(axiosErr.response?.data?.message || 'Failed to login. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
@@ -43,7 +49,7 @@ const Login = () => {
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-orange-500/10 blur-[120px] rounded-full mix-blend-multiply pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-400/10 blur-[120px] rounded-full mix-blend-multiply pointer-events-none" />
 
-      <div className="container relative z-10 flex w-full max-w-6xl mx-auto rounded-3xl overflow-hidden shadow-2xl border border-zinc-200/50 bg-white min-h-[700px]">
+      <div className="container relative z-10 flex w-full max-w-6xl mx-auto rounded-3xl overflow-hidden shadow-2xl border border-zinc-200/50 bg-white min-h-175">
         
         {/* Left Side: Hero Information */}
         <div className="hidden lg:flex flex-col justify-between w-1/2 bg-zinc-50 border-r border-zinc-100 p-12 text-zinc-900 relative overflow-hidden">
@@ -92,6 +98,12 @@ const Login = () => {
               <h2 className="text-3xl font-bold tracking-tight text-zinc-900">Sign in</h2>
               <p className="text-zinc-500 mt-2">Enter your credentials below to access your dashboard</p>
             </div>
+
+            {justRegistered && (
+              <div className="p-4 bg-green-50 text-green-700 rounded-lg border border-green-200 text-sm font-medium">
+                Account created successfully! Please sign in to continue.
+              </div>
+            )}
 
             {error && (
               <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-100 text-sm font-medium">

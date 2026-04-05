@@ -1,5 +1,5 @@
 import { prisma } from "../../config/prisma";
-import { UpdateDoctorProfileInput } from "./doctor.schema";
+import { UpdateDoctorProfileInput, CreateTimeSlotsInput } from "./doctor.schema";
 
 /**
  * Remove keys with `undefined` values from an object.
@@ -101,15 +101,20 @@ export const updateDoctorProfile = async (
  * Get all doctors with their profiles
  */
 export const getAllDoctors = async () => {
+  // Only return active doctors who have been approved by admin
   const doctors = await prisma.user.findMany({
-    where: { role: "DOCTOR" },
+    where: {
+      role: "DOCTOR",
+      isActive: true,
+      doctorProfile: { approvalStatus: "APPROVED" },
+    },
     select: {
       id: true,
       name: true,
       email: true,
       role: true,
       createdAt: true,
-      doctorProfile: true, // Include the associated profile
+      doctorProfile: true,
     },
   });
 
@@ -151,7 +156,7 @@ function generateTimeSlots(date: string, startTime: string, endTime: string) {
 /**
  * Configure 30-min time slots for a specific date
  */
-export const createDailyTimeSlots = async (userId: string, data: any) => {
+export const createDailyTimeSlots = async (userId: string, data: CreateTimeSlotsInput) => {
   const { date, startTime, endTime } = data;
   
   const newSlotsData = generateTimeSlots(date, startTime, endTime).map(s => ({
