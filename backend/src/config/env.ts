@@ -53,6 +53,7 @@ export const env = {
 
   // Admin seed email
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || "admin@oshadhi.com",
+  ADMIN_PASSWORD: requireEnv("ADMIN_PASSWORD"),
 
   // Agora — always required (app can't function without them)
   AGORA_APP_ID: requireEnv("APP_ID"),
