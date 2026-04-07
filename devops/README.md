@@ -176,6 +176,7 @@ devops/
 ├── docker-setup.md
 ├── cloud-setup.md
 ├── cicd-setup.md
+├── testing.md
 ```
 
 ---
@@ -189,14 +190,11 @@ Cloud & DevOps Engineer
 [Gmail](mailto:adapalasriharshareddy@gmail.com)
 
 ---
-
-## Final Status
-
-```text
-Phase 1 — Local            ✅ Complete
-Phase 2 — Docker           ✅ Complete
-Phase 3 — EC2              ✅ Complete
-Phase 4 — CI/CD            ✅ Complete
-```
+## Next Scope
+- [ ] HTTPS via SSL certificate (required for Agora video calls in production)
+- [ ] Domain name integration
+- [ ] Image version tagging (avoid `latest` in production)
+- [ ] Database backup strategy
+- [ ] Basic monitoring and alerting setup
 
 
