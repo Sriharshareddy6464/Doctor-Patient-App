@@ -33,12 +33,8 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
-# Copy generated Prisma client (needed at runtime)
+# Copy generated Prisma client
 COPY --from=builder /app/src/generated ./src/generated
-
-# Copy node_modules Prisma binaries
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 EXPOSE 5000
 
