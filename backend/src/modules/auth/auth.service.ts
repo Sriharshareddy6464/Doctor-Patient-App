@@ -36,7 +36,21 @@ export const register = async (data: RegisterInput) => {
     },
   });
 
-  // Generate tokens
+  // Doctors must wait for admin approval before they can access the app.
+  // Do NOT issue tokens — they cannot be logged in yet.
+  if (data.role === "DOCTOR") {
+    return {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      requiresApproval: true,
+    };
+  }
+
+  // For all other roles (PATIENT), issue tokens immediately.
   const tokenPayload: TokenPayload = {
     userId: user.id,
     email: user.email,
@@ -62,6 +76,7 @@ export const register = async (data: RegisterInput) => {
     },
     accessToken,
     refreshToken,
+    requiresApproval: false,
   };
 };
 

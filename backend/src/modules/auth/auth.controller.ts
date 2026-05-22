@@ -35,9 +35,14 @@ export const registerUser = async (req: Request, res: Response) => {
 
   try {
     const result = await authService.register(parsed.data);
-    return res.status(201).json({
+    // Doctors require admin approval — no tokens are issued yet.
+    // Return 202 Accepted to signal the client to show the pending screen.
+    const statusCode = result.requiresApproval ? 202 : 201;
+    return res.status(statusCode).json({
       success: true,
-      message: "User registered successfully",
+      message: result.requiresApproval
+        ? "Registration successful. Your account is pending admin approval."
+        : "User registered successfully",
       data: result,
     });
   } catch (err: any) {
