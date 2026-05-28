@@ -18,6 +18,12 @@ export interface User {
       | 'PHASE2_REJECTED';
     canTakeAppointments: boolean;
     phase2RejectionReason: string | null;
+    rejectionReason?: string | null;
+    specializations?: string[];
+    experience?: number;
+    consultationFee?: number;
+    licenseNumber?: string;
+    phone?: string;
   } | null;
   // Patient-specific fields returned from /auth/me
   patientProfile?: {

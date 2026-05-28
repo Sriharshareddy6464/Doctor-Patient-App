@@ -22,6 +22,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
 
@@ -40,7 +41,6 @@ export default function LoginScreen() {
     setErrors({});
     try {
       await login(email.trim().toLowerCase(), password);
-      // Redirect happens via index.tsx
       router.replace('/');
     } catch (error) {
       if (error instanceof ApiError) {
@@ -68,17 +68,14 @@ export default function LoginScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Decorative Background Elements could go here */}
-
-          {/* Main Auth Card */}
-          <View style={styles.card}>
+          <View style={styles.contentWrapper}>
             {/* Header & Branding */}
             <View style={styles.header}>
               <View style={styles.logoContainer}>
-                <Ionicons name="medical" size={32} color={Colors.textInverse} />
+                <Ionicons name="leaf" size={32} color={Colors.primary} />
               </View>
               <Text style={styles.appName}>Docco360</Text>
-              <Text style={styles.tagline}>Sign in to your patient dashboard</Text>
+              <Text style={styles.tagline}>Welcome back. Secure access to your health portal.</Text>
             </View>
 
             {/* Form */}
@@ -92,7 +89,7 @@ export default function LoginScreen() {
 
               <Input
                 label="Email Address"
-                placeholder="name@example.com"
+                placeholder="patient@example.com"
                 icon="mail-outline"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -111,7 +108,7 @@ export default function LoginScreen() {
                 </View>
                 <Input
                   placeholder="••••••••"
-                  icon="lock-closed-outline"
+                  icon="key-outline"
                   secureTextEntry={!showPassword}
                   rightIcon={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   onRightIconPress={() => setShowPassword(!showPassword)}
@@ -121,8 +118,19 @@ export default function LoginScreen() {
                 />
               </View>
 
+              <TouchableOpacity 
+                style={styles.rememberMeContainer}
+                activeOpacity={0.7}
+                onPress={() => setRememberMe(!rememberMe)}
+              >
+                <View style={[styles.checkbox, rememberMe && styles.checkboxActive]}>
+                  {rememberMe && <Ionicons name="checkmark" size={14} color="#fff" />}
+                </View>
+                <Text style={styles.rememberMeText}>Remember me</Text>
+              </TouchableOpacity>
+
               <Button
-                title="Sign In"
+                title="Sign In to Portal"
                 onPress={handleLogin}
                 loading={loading}
                 fullWidth
@@ -131,26 +139,33 @@ export default function LoginScreen() {
               />
             </View>
 
-            {/* Register Link */}
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>
-                New to Docco360?{' '}
-              </Text>
-              <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
-                <Text style={styles.footerLink}>Create an account</Text>
+            {/* Divider */}
+            <View style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or continue with</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            {/* Social Logins */}
+            <View style={styles.socialContainer}>
+              <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
+                <Ionicons name="logo-google" size={20} color="#EA4335" />
+                <Text style={styles.socialButtonText}>Google</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
+                <Ionicons name="logo-apple" size={20} color="#000" />
+                <Text style={styles.socialButtonText}>Apple ID</Text>
               </TouchableOpacity>
             </View>
 
-            {/* Trust Badges */}
-            <View style={styles.trustContainer}>
-              <View style={styles.trustBadge}>
-                <Ionicons name="shield-checkmark-outline" size={16} color={Colors.textSecondary} />
-                <Text style={styles.trustText}>HIPAA COMPLIANT</Text>
-              </View>
-              <View style={styles.trustBadge}>
-                <Ionicons name="lock-closed-outline" size={16} color={Colors.textSecondary} />
-                <Text style={styles.trustText}>SECURE SSL</Text>
-              </View>
+            {/* Register Link */}
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>
+                Don't have an account?{' '}
+              </Text>
+              <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
+                <Text style={styles.footerLink}>Sign up for free</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
@@ -162,7 +177,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.primaryFaded, // Using the light bluish background from the design
+    backgroundColor: Colors.background, // changed to background as per borderless design
   },
   keyboardView: {
     flex: 1,
@@ -172,11 +187,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: Spacing.lg,
   },
-  card: {
-    backgroundColor: Colors.surface,
-    borderRadius: Radii.xl,
-    padding: Spacing.xl,
-    ...Shadows.lg,
+  contentWrapper: {
     width: '100%',
     maxWidth: 480,
     alignSelf: 'center',
@@ -188,23 +199,27 @@ const styles = StyleSheet.create({
   logoContainer: {
     width: 64,
     height: 64,
-    backgroundColor: Colors.primary,
-    borderRadius: Radii.md,
+    backgroundColor: Colors.surface,
+    borderRadius: Radii.full,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.md,
-    ...Shadows.md,
+    ...Shadows.sm,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
   },
   appName: {
     fontSize: Fonts.sizes.xxxl,
     fontWeight: '700',
-    color: Colors.primary,
+    color: Colors.text,
     marginBottom: Spacing.xs,
+    letterSpacing: -0.5,
   },
   tagline: {
     fontSize: Fonts.sizes.md,
     color: Colors.textSecondary,
     fontWeight: '400',
+    textAlign: 'center',
   },
   form: {
     marginBottom: Spacing.lg,
@@ -230,12 +245,13 @@ const styles = StyleSheet.create({
   passwordHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     marginBottom: Spacing.xs,
+    paddingHorizontal: 4,
   },
   inputLabel: {
     fontSize: Fonts.sizes.sm,
-    fontWeight: '500',
+    fontWeight: '600',
     color: Colors.text,
   },
   forgotPassword: {
@@ -243,8 +259,72 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: '500',
   },
-  submitButton: {
+  rememberMeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
     marginTop: Spacing.md,
+    marginBottom: Spacing.md,
+    paddingHorizontal: 4,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: Colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+  },
+  checkboxActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  rememberMeText: {
+    fontSize: Fonts.sizes.sm,
+    color: Colors.textSecondary,
+  },
+  submitButton: {
+    marginTop: Spacing.sm,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.borderLight,
+  },
+  dividerText: {
+    marginHorizontal: Spacing.md,
+    fontSize: Fonts.sizes.xs,
+    color: Colors.textTertiary,
+  },
+  socialContainer: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  socialButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    backgroundColor: Colors.surface,
+    paddingVertical: Spacing.md,
+    borderRadius: Radii.lg,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    ...Shadows.sm,
+  },
+  socialButtonText: {
+    fontSize: Fonts.sizes.sm,
+    fontWeight: '500',
+    color: Colors.text,
   },
   footer: {
     flexDirection: 'row',
@@ -260,25 +340,6 @@ const styles = StyleSheet.create({
     fontSize: Fonts.sizes.md,
     color: Colors.primary,
     fontWeight: '600',
-  },
-  trustContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: Spacing.xl,
-    paddingTop: Spacing.xl,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
-  },
-  trustBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
-  trustText: {
-    fontSize: Fonts.sizes.xs,
-    color: Colors.textSecondary,
-    fontWeight: '600',
-    letterSpacing: 0.5,
+    textDecorationLine: 'underline',
   },
 });
