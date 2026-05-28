@@ -38,6 +38,14 @@ export const updateDoctorProfileSchema = z.object({
     .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Must be in HH:mm format")
     .optional()
     .nullable(),
+
+  // Phase 2 — professional license / registration number
+  licenseNumber: z
+    .string()
+    .min(2, "License number must be at least 2 characters")
+    .max(100, "License number is too long")
+    .optional()
+    .nullable(),
 });
 
 export type UpdateDoctorProfileInput = z.infer<typeof updateDoctorProfileSchema>;

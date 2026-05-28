@@ -9,6 +9,7 @@ export interface PatientProfile {
   bloodGroup: string | null;
   phone: string | null;
   address: string | null;
+  emergencyContact: string | null;
   allergies: string[];
   medicalHistory: string | null;
   createdAt: string;
@@ -79,6 +80,7 @@ export const patientService = {
     bloodGroup?: string | null;
     phone?: string | null;
     address?: string | null;
+    emergencyContact?: string | null;
     allergies?: string[];
     medicalHistory?: string | null;
   }): Promise<PatientWithProfile> {

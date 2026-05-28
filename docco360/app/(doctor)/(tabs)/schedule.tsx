@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '@/contexts/AuthContext';
 import { doctorService } from '@/services/doctor';
 import { Button } from '@/components/Button';
 import { Colors, Fonts, Spacing, Radii, Shadows } from '@/constants/theme';
@@ -16,6 +17,7 @@ import type { TimeSlot } from '@/services/doctor';
 
 export default function DoctorScheduleScreen() {
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState('');
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('17:00');
@@ -61,6 +63,29 @@ export default function DoctorScheduleScreen() {
       setLoading(false);
     }
   };
+
+  // Gate: if appointments not enabled, show contact-admin message
+  const canTakeAppointments = user?.doctorProfile?.canTakeAppointments;
+  if (canTakeAppointments === false) {
+    return (
+      <View style={[styles.container, styles.gateContainer]}>
+        <View style={[styles.header, { paddingTop: insets.top + Spacing.lg }]}>
+          <Text style={styles.title}>Manage Schedule</Text>
+          <Text style={styles.subtitle}>Configure your available time slots</Text>
+        </View>
+        <View style={styles.gateContent}>
+          <View style={styles.gateIconRing}>
+            <Ionicons name="lock-closed" size={40} color={Colors.textTertiary} />
+          </View>
+          <Text style={styles.gateTitle}>Appointment Booking Not Enabled</Text>
+          <Text style={styles.gateText}>
+            Your profile is verified, but appointment booking has not been enabled for your account yet.
+            Please contact admin for more information or approval.
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -218,6 +243,12 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: Fonts.sizes.lg, fontWeight: '700', color: Colors.text, marginBottom: Spacing.md },
   helperText: { fontSize: Fonts.sizes.sm, color: Colors.textSecondary, marginBottom: Spacing.lg },
   card: { backgroundColor: Colors.card, borderRadius: Radii.lg, padding: Spacing.xl, marginHorizontal: Spacing.lg, marginBottom: Spacing.lg },
+
+  gateContainer: {},
+  gateContent: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: Spacing.xxl },
+  gateIconRing: { width: 96, height: 96, borderRadius: 48, backgroundColor: Colors.surfaceAlt, justifyContent: 'center', alignItems: 'center', marginBottom: Spacing.xl },
+  gateTitle: { fontSize: Fonts.sizes.xl, fontWeight: '700', color: Colors.text, textAlign: 'center', marginBottom: Spacing.md },
+  gateText: { fontSize: Fonts.sizes.sm, color: Colors.textSecondary, textAlign: 'center', lineHeight: Fonts.lineHeights.sm },
 
   dateChip: {
     width: 64, alignItems: 'center', paddingVertical: Spacing.md, marginRight: Spacing.sm,

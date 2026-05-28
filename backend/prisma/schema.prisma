@@ -5,7 +5,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -44,8 +43,15 @@ model DoctorProfile {
   availableFrom   String? // e.g. "09:00"
   availableTo     String? // e.g. "17:00"
 
-  approvalStatus  DoctorApprovalStatus @default(PENDING)
-  rejectionReason String?
+  // Phase 2 — professional verification
+  licenseNumber        String? // text license/registration number (Phase 2)
+  phase2RejectionReason String? // reason if Phase 2 was rejected
+
+  // Phase 3 — appointment booking gate (admin toggle)
+  canTakeAppointments Boolean @default(false)
+
+  approvalStatus  DoctorApprovalStatus @default(PHASE1_PENDING)
+  rejectionReason String? // Phase 1 rejection reason
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -76,9 +82,15 @@ enum Role {
 }
 
 enum DoctorApprovalStatus {
-  PENDING
-  APPROVED
-  REJECTED
+  // Phase 1 — basic registration review
+  PHASE1_PENDING  // just registered, awaiting admin Phase 1 approval
+  PHASE1_APPROVED // admin approved Phase 1 — doctor can now log in
+  REJECTED        // Phase 1 rejected — doctor cannot log in
+
+  // Phase 2 — professional details / license verification
+  PHASE2_PENDING  // doctor submitted full profile, awaiting admin Phase 2 approval
+  PHASE2_APPROVED // fully verified doctor
+  PHASE2_REJECTED // admin rejected Phase 2 details — doctor can re-submit
 }
 
 enum Gender {

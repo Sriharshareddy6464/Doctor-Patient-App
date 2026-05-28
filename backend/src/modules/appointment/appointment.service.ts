@@ -2,6 +2,7 @@ import { prisma } from "../../config/prisma";
 import { RtcTokenBuilder, RtcRole } from "agora-access-token";
 import { env } from "../../config/env";
 import { BookAppointmentInput } from "./appointment.schema";
+import { DoctorApprovalStatus } from "@prisma/client";
 
 // Doctor always joins as UID 1, patient as UID 2
 const DOCTOR_UID = 1;
@@ -42,7 +43,7 @@ export const getDoctorAvailableSlots = async (doctorId: string, date: string) =>
   if (!doctor) {
     throw { status: 404, message: "Doctor not found" };
   }
-  if (!doctor.isActive || doctor.doctorProfile?.approvalStatus !== "APPROVED") {
+  if (!doctor.isActive || doctor.doctorProfile?.approvalStatus !== DoctorApprovalStatus.PHASE2_APPROVED) {
     throw { status: 403, message: "This doctor is not currently available for bookings" };
   }
 

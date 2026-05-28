@@ -22,22 +22,28 @@ type Role = 'PATIENT' | 'DOCTOR';
 export default function RegisterScreen() {
   const { register } = useAuth();
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<Role>('PATIENT');
+  const [specialization, setSpecialization] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!name.trim() || name.trim().length < 2) newErrors.name = 'Name must be at least 2 characters';
+    if (!phone.trim()) newErrors.phone = 'Phone number is required';
+    else if (phone.trim().length < 7) newErrors.phone = 'Enter a valid phone number';
     if (!email.trim()) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Invalid email format';
     if (!password) newErrors.password = 'Password is required';
     else if (password.length < 8) newErrors.password = 'Must be at least 8 characters';
     else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password))
       newErrors.password = 'Must contain uppercase, lowercase, and number';
+    if (role === 'DOCTOR' && !specialization.trim())
+      newErrors.specialization = 'Please enter your medical specialization';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -62,7 +68,14 @@ export default function RegisterScreen() {
     setLoading(true);
     setErrors({});
     try {
-      const { requiresApproval } = await register(name.trim(), email.trim().toLowerCase(), password, role);
+      const { requiresApproval } = await register(
+        name.trim(),
+        email.trim().toLowerCase(),
+        password,
+        role,
+        phone.trim(),
+        role === 'DOCTOR' ? specialization.trim() : undefined,
+      );
       if (requiresApproval) {
         // Doctor — navigate to the waiting screen, do NOT log them in
         router.replace('/(auth)/pending-approval');
@@ -157,7 +170,7 @@ export default function RegisterScreen() {
             <View style={styles.infoBanner}>
               <Ionicons name="information-circle" size={18} color={Colors.primary} />
               <Text style={styles.infoBannerText}>
-                Doctor accounts require admin approval before you can start practicing.
+                Doctor accounts require a 2-step admin approval before you can start practicing.
               </Text>
             </View>
           )}
@@ -177,6 +190,16 @@ export default function RegisterScreen() {
             value={name}
             onChangeText={setName}
             error={errors.name}
+          />
+
+          <Input
+            label="Phone Number"
+            placeholder="Enter your phone number"
+            icon="call-outline"
+            keyboardType="phone-pad"
+            value={phone}
+            onChangeText={setPhone}
+            error={errors.phone}
           />
 
           <Input
@@ -224,6 +247,19 @@ export default function RegisterScreen() {
                 {strength.label}
               </Text>
             </View>
+          )}
+
+          {/* Doctor-only: Specialization */}
+          {role === 'DOCTOR' && (
+            <Input
+              label="Medical Specialization"
+              placeholder="e.g. Cardiologist, Dermatologist"
+              icon="briefcase-outline"
+              autoCapitalize="words"
+              value={specialization}
+              onChangeText={setSpecialization}
+              error={errors.specialization}
+            />
           )}
 
           <Button

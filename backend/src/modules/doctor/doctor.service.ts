@@ -1,5 +1,7 @@
 import { prisma } from "../../config/prisma";
 import { UpdateDoctorProfileInput, CreateTimeSlotsInput } from "./doctor.schema";
+import { DoctorApprovalStatus } from "@prisma/client";
+
 
 /**
  * Remove keys with `undefined` values from an object.
@@ -62,21 +64,53 @@ export const getDoctorProfile = async (userId: string) => {
 };
 
 /**
- * Update (or create) doctor profile
+ * Update (or create) doctor profile.
+ * If the doctor is at PHASE1_APPROVED and submits a licenseNumber,
+ * automatically advance their status to PHASE2_PENDING.
  */
 export const updateDoctorProfile = async (
   userId: string,
   data: UpdateDoctorProfileInput
 ) => {
   const cleanData = stripUndefined(data);
+
+  // Fetch current approval status to decide whether to auto-advance to Phase 2
+  const currentProfile = await prisma.doctorProfile.findUnique({
+    where: { userId },
+    select: { approvalStatus: true },
+  });
+
+  // If doctor is PHASE1_APPROVED and is submitting a licenseNumber,
+  // automatically move them to PHASE2_PENDING for admin review
+  let approvalStatusOverride: DoctorApprovalStatus | undefined;
+  if (
+    currentProfile?.approvalStatus === DoctorApprovalStatus.PHASE1_APPROVED &&
+    data.licenseNumber &&
+    data.licenseNumber.trim().length > 0
+  ) {
+    approvalStatusOverride = DoctorApprovalStatus.PHASE2_PENDING;
+  }
+
+  // If doctor was PHASE2_REJECTED and is re-submitting (with a licenseNumber),
+  // move them back to PHASE2_PENDING
+  if (
+    currentProfile?.approvalStatus === DoctorApprovalStatus.PHASE2_REJECTED &&
+    data.licenseNumber &&
+    data.licenseNumber.trim().length > 0
+  ) {
+    approvalStatusOverride = DoctorApprovalStatus.PHASE2_PENDING;
+  }
+
   const profile = await prisma.doctorProfile.upsert({
     where: { userId },
     create: {
       userId,
       ...cleanData,
+      ...(approvalStatusOverride ? { approvalStatus: approvalStatusOverride } : {}),
     },
     update: {
       ...cleanData,
+      ...(approvalStatusOverride ? { approvalStatus: approvalStatusOverride, phase2RejectionReason: null } : {}),
     },
     include: {
       user: {
@@ -98,15 +132,18 @@ export const updateDoctorProfile = async (
 };
 
 /**
- * Get all doctors with their profiles
+ * Get all doctors visible to patients:
+ * Must be PHASE2_APPROVED AND canTakeAppointments = true
  */
 export const getAllDoctors = async () => {
-  // Only return active doctors who have been approved by admin
   const doctors = await prisma.user.findMany({
     where: {
       role: "DOCTOR",
       isActive: true,
-      doctorProfile: { approvalStatus: "APPROVED" },
+      doctorProfile: {
+        approvalStatus: DoctorApprovalStatus.PHASE2_APPROVED,
+        canTakeAppointments: true,
+      },
     },
     select: {
       id: true,
@@ -157,6 +194,20 @@ function generateTimeSlots(date: string, startTime: string, endTime: string) {
  * Configure 30-min time slots for a specific date
  */
 export const createDailyTimeSlots = async (userId: string, data: CreateTimeSlotsInput) => {
+  // Verify doctor is Phase 2 approved and can take appointments
+  const profile = await prisma.doctorProfile.findUnique({
+    where: { userId },
+    select: { approvalStatus: true, canTakeAppointments: true },
+  });
+
+  if (!profile || profile.approvalStatus !== DoctorApprovalStatus.PHASE2_APPROVED) {
+    throw { status: 403, message: "Doctor profile must be fully verified (Phase 2 approved) to create time slots." };
+  }
+
+  if (!profile.canTakeAppointments) {
+    throw { status: 403, message: "Appointment booking is not enabled for your account. Please contact admin." };
+  }
+
   const { date, startTime, endTime } = data;
   
   const newSlotsData = generateTimeSlots(date, startTime, endTime).map(s => ({

@@ -3,7 +3,14 @@ import { z } from "zod";
 export const updatePatientProfileSchema = z.object({
   dateOfBirth: z
     .string()
-    .datetime({ message: "Date of birth must be a valid ISO date string" })
+    // Accept YYYY-MM-DD or full ISO datetime
+    .refine(
+      (val) => {
+        if (!val) return true;
+        return /^\d{4}-\d{2}-\d{2}(T.*)?$/.test(val);
+      },
+      { message: "Date of birth must be in YYYY-MM-DD format" }
+    )
     .optional()
     .nullable(),
 
@@ -30,6 +37,12 @@ export const updatePatientProfileSchema = z.object({
   address: z
     .string()
     .max(500, "Address must be at most 500 characters")
+    .optional()
+    .nullable(),
+
+  emergencyContact: z
+    .string()
+    .max(200, "Emergency contact must be at most 200 characters")
     .optional()
     .nullable(),
 

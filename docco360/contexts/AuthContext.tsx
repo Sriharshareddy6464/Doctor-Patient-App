@@ -7,7 +7,14 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, role: 'PATIENT' | 'DOCTOR') => Promise<{ requiresApproval: boolean }>;
+  register: (
+    name: string,
+    email: string,
+    password: string,
+    role: 'PATIENT' | 'DOCTOR',
+    phone?: string,
+    specialization?: string,
+  ) => Promise<{ requiresApproval: boolean }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -59,8 +66,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const register = useCallback(
-    async (name: string, email: string, password: string, role: 'PATIENT' | 'DOCTOR') => {
-      const result = await authService.register(name, email, password, role);
+    async (
+      name: string,
+      email: string,
+      password: string,
+      role: 'PATIENT' | 'DOCTOR',
+      phone?: string,
+      specialization?: string,
+    ) => {
+      const result = await authService.register(name, email, password, role, phone, specialization);
       // Doctors require admin approval — do not log them in automatically.
       if (!result.requiresApproval) {
         setUser(result.user);

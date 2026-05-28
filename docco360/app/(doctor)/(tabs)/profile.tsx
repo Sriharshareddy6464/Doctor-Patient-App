@@ -35,6 +35,7 @@ export default function DoctorProfileScreen() {
   const [consultationFee, setConsultationFee] = useState('');
   const [availableFrom, setAvailableFrom] = useState('');
   const [availableTo, setAvailableTo] = useState('');
+  const [licenseNumber, setLicenseNumber] = useState('');
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -48,6 +49,7 @@ export default function DoctorProfileScreen() {
         setConsultationFee(data.profile.consultationFee?.toString() || '');
         setAvailableFrom(data.profile.availableFrom || '');
         setAvailableTo(data.profile.availableTo || '');
+        setLicenseNumber(data.profile.licenseNumber || '');
       }
     } catch (error) {
       console.error('Failed to fetch profile:', error);
@@ -75,6 +77,7 @@ export default function DoctorProfileScreen() {
         consultationFee: consultationFee ? parseFloat(consultationFee) : null,
         availableFrom: availableFrom || null,
         availableTo: availableTo || null,
+        licenseNumber: licenseNumber || null,
       });
       setEditing(false);
       fetchProfile();
@@ -210,6 +213,19 @@ export default function DoctorProfileScreen() {
             value={availableTo}
             onChangeText={setAvailableTo}
             editable={editing}
+          />
+        </View>
+
+        <View style={[styles.card, Shadows.md]}>
+          <Text style={styles.sectionTitle}>Practice License</Text>
+          <Input
+            label="License / Registration Number"
+            placeholder="e.g. MCI-1234567"
+            icon="card-outline"
+            value={licenseNumber}
+            onChangeText={setLicenseNumber}
+            editable={editing}
+            autoCapitalize="characters"
           />
         </View>
 

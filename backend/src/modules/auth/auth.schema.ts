@@ -21,6 +21,20 @@ export const registerSchema = z.object({
   role: z.enum(["PATIENT", "DOCTOR"] as const, {
     error: "Role must be either PATIENT or DOCTOR",
   }),
+
+  // Optional at registration — collected for both roles
+  phone: z
+    .string()
+    .min(7, "Phone number must be at least 7 characters")
+    .max(20, "Phone number is too long")
+    .optional(),
+
+  // Only relevant for DOCTOR — pre-fills specializations on the profile
+  specialization: z
+    .string()
+    .min(2, "Specialization must be at least 2 characters")
+    .max(100, "Specialization is too long")
+    .optional(),
 });
 
 export const loginSchema = z.object({

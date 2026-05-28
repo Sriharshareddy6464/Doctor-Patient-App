@@ -9,6 +9,7 @@ import {
 import { RegisterInput, LoginInput } from "./auth.schema";
 import { env } from "../../config/env";
 import { prisma } from "../../config/prisma";
+import { DoctorApprovalStatus } from "@prisma/client";
 
 /**
  * Register a new user (PATIENT or DOCTOR only — no ADMIN self-registration)
@@ -26,17 +27,41 @@ export const register = async (data: RegisterInput) => {
   // Hash password
   const hashedPassword = await hashPassword(data.password);
 
-  // Create user
-  const user = await prisma.user.create({
-    data: {
-      name: data.name,
-      email: data.email,
-      password: hashedPassword,
-      role: data.role,
-    },
+  // Create user + profile in a transaction
+  const user = await prisma.$transaction(async (tx) => {
+    const newUser = await tx.user.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        password: hashedPassword,
+        role: data.role,
+      },
+    });
+
+    if (data.role === "DOCTOR") {
+      // Create a DoctorProfile immediately at registration (Phase 1)
+      await tx.doctorProfile.create({
+        data: {
+          userId: newUser.id,
+          phone: data.phone ?? null,
+          specializations: data.specialization ? [data.specialization] : [],
+          approvalStatus: DoctorApprovalStatus.PHASE1_PENDING,
+        },
+      });
+    } else {
+      // PATIENT — create profile with phone (health details filled in-app later)
+      await tx.patientProfile.create({
+        data: {
+          userId: newUser.id,
+          phone: data.phone ?? null,
+        },
+      });
+    }
+
+    return newUser;
   });
 
-  // Doctors must wait for admin approval before they can access the app.
+  // Doctors must wait for admin Phase 1 approval before they can log in.
   // Do NOT issue tokens — they cannot be logged in yet.
   if (data.role === "DOCTOR") {
     return {
@@ -67,13 +92,10 @@ export const register = async (data: RegisterInput) => {
     data: { refreshToken: hashedRefreshToken },
   });
 
+  const fullUser = await getProfile(user.id);
+
   return {
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    },
+    user: fullUser,
     accessToken,
     refreshToken,
     requiresApproval: false,
@@ -104,16 +126,23 @@ export const login = async (data: LoginInput) => {
     throw { status: 403, message: "Your account has been deactivated. Please contact support." };
   }
 
-  // Doctors must be approved by admin before they can log in
+  // Doctors must pass Phase 1 approval before they can log in
   if (user.role === "DOCTOR") {
     const profile = await prisma.doctorProfile.findUnique({ where: { userId: user.id } });
-    if (!profile || profile.approvalStatus === "PENDING") {
-      throw { status: 403, message: "Your account is pending admin approval. You will be notified once approved." };
+
+    if (!profile || profile.approvalStatus === DoctorApprovalStatus.PHASE1_PENDING) {
+      throw {
+        status: 403,
+        message: "Your account is pending admin approval (Phase 1). You will be notified once approved.",
+      };
     }
-    if (profile.approvalStatus === "REJECTED") {
+
+    if (profile.approvalStatus === DoctorApprovalStatus.REJECTED) {
       const reason = profile.rejectionReason ? ` Reason: ${profile.rejectionReason}` : "";
       throw { status: 403, message: `Your doctor application was not approved.${reason}` };
     }
+
+    // PHASE1_APPROVED, PHASE2_PENDING, PHASE2_APPROVED, PHASE2_REJECTED — all can log in
   }
 
   // Generate tokens
@@ -133,13 +162,10 @@ export const login = async (data: LoginInput) => {
     data: { refreshToken: hashedRefreshToken },
   });
 
+  const fullUser = await getProfile(user.id);
+
   return {
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    },
+    user: fullUser,
     accessToken,
     refreshToken,
   };
@@ -206,7 +232,7 @@ export const refreshAccessToken = async (refreshToken: string) => {
 };
 
 /**
- * Get current user profile
+ * Get current user profile (includes doctor approval status for routing)
  */
 export const getProfile = async (userId: string) => {
   const user = await prisma.user.findUnique({
@@ -218,6 +244,19 @@ export const getProfile = async (userId: string) => {
       role: true,
       createdAt: true,
       updatedAt: true,
+      doctorProfile: {
+        select: {
+          approvalStatus: true,
+          canTakeAppointments: true,
+          phase2RejectionReason: true,
+        },
+      },
+      patientProfile: {
+        select: {
+          id: true,
+          phone: true,
+        },
+      },
     },
   });
 

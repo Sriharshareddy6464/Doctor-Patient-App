@@ -7,10 +7,20 @@ export interface DoctorProfile {
   experience: number;
   qualifications: string[];
   bio: string | null;
+  phone: string | null;
   consultationFee: number | null;
   availableFrom: string | null;
   availableTo: string | null;
-  approvalStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
+  licenseNumber: string | null;
+  phase2RejectionReason: string | null;
+  canTakeAppointments: boolean;
+  approvalStatus:
+    | 'PHASE1_PENDING'
+    | 'PHASE1_APPROVED'
+    | 'REJECTED'
+    | 'PHASE2_PENDING'
+    | 'PHASE2_APPROVED'
+    | 'PHASE2_REJECTED';
   rejectionReason: string | null;
   createdAt: string;
   updatedAt: string;
@@ -94,9 +104,11 @@ export const doctorService = {
     experience?: number;
     qualifications?: string[];
     bio?: string | null;
+    phone?: string | null;
     consultationFee?: number | null;
     availableFrom?: string | null;
     availableTo?: string | null;
+    licenseNumber?: string | null;
   }): Promise<DoctorWithProfile> {
     return apiRequest<DoctorWithProfile>('/doctor/profile', {
       method: 'PUT',

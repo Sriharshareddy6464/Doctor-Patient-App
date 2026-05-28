@@ -1,10 +1,20 @@
 import { apiRequest } from './api';
 import type { Appointment } from './doctor';
 
+export type DoctorApprovalStatus =
+  | 'PHASE1_PENDING'
+  | 'PHASE1_APPROVED'
+  | 'REJECTED'
+  | 'PHASE2_PENDING'
+  | 'PHASE2_APPROVED'
+  | 'PHASE2_REJECTED';
+
 export interface AdminStats {
   totalDoctors: number;
   activeDoctors: number;
   pendingApprovals: number;
+  phase1Pending: number;
+  phase2Pending: number;
   totalPatients: number;
   totalAppointments: number;
   confirmedAppointments: number;
@@ -20,12 +30,16 @@ export interface AdminDoctor {
   isActive: boolean;
   createdAt: string;
   doctorProfile: {
-    approvalStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
+    approvalStatus: DoctorApprovalStatus;
     rejectionReason: string | null;
+    phase2RejectionReason: string | null;
     specializations: string[];
     experience: number;
     consultationFee: number;
     qualifications: string[];
+    licenseNumber: string | null;
+    canTakeAppointments: boolean;
+    phone: string | null;
   } | null;
   _count: {
     doctorAppointments: number;
@@ -57,19 +71,43 @@ export const adminService = {
     return apiRequest<AdminDoctor[]>('/admin/doctors');
   },
 
-  async approveDoctor(id: string): Promise<{ message: string }> {
-    return apiRequest<{ message: string }>(`/admin/doctors/${id}/approve`, {
+  // ── Phase 1 ──
+  async approvePhase1(id: string): Promise<{ message: string }> {
+    return apiRequest<{ message: string }>(`/admin/doctors/${id}/approve-phase1`, {
       method: 'PATCH',
     });
   },
 
-  async rejectDoctor(id: string, reason?: string): Promise<{ message: string }> {
-    return apiRequest<{ message: string }>(`/admin/doctors/${id}/reject`, {
+  async rejectPhase1(id: string, reason?: string): Promise<{ message: string }> {
+    return apiRequest<{ message: string }>(`/admin/doctors/${id}/reject-phase1`, {
       method: 'PATCH',
       body: { reason },
     });
   },
 
+  // ── Phase 2 ──
+  async approvePhase2(id: string): Promise<{ message: string }> {
+    return apiRequest<{ message: string }>(`/admin/doctors/${id}/approve-phase2`, {
+      method: 'PATCH',
+    });
+  },
+
+  async rejectPhase2(id: string, reason?: string): Promise<{ message: string }> {
+    return apiRequest<{ message: string }>(`/admin/doctors/${id}/reject-phase2`, {
+      method: 'PATCH',
+      body: { reason },
+    });
+  },
+
+  // ── Phase 3 ──
+  async toggleAppointments(id: string, canTake: boolean): Promise<{ message: string }> {
+    return apiRequest<{ message: string }>(`/admin/doctors/${id}/toggle-appointments`, {
+      method: 'PATCH',
+      body: { canTake },
+    });
+  },
+
+  // ── Account management ──
   async activateDoctor(id: string): Promise<{ message: string }> {
     return apiRequest<{ message: string }>(`/admin/doctors/${id}/activate`, {
       method: 'PATCH',

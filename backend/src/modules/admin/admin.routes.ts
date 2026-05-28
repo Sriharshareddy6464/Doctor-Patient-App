@@ -8,8 +8,19 @@ router.get("/stats", ctrl.getStats);
 
 // Doctor management
 router.get("/doctors", ctrl.getAllDoctors);
-router.patch("/doctors/:id/approve", ctrl.approveDoctor);
-router.patch("/doctors/:id/reject", ctrl.rejectDoctor);
+
+// Phase 1 actions
+router.patch("/doctors/:id/approve-phase1", ctrl.approvePhase1);
+router.patch("/doctors/:id/reject-phase1", ctrl.rejectPhase1);
+
+// Phase 2 actions
+router.patch("/doctors/:id/approve-phase2", ctrl.approvePhase2);
+router.patch("/doctors/:id/reject-phase2", ctrl.rejectPhase2);
+
+// Phase 3 — appointment toggle
+router.patch("/doctors/:id/toggle-appointments", ctrl.toggleAppointments);
+
+// Account activation (ban/unban — separate from appointment toggle)
 router.patch("/doctors/:id/activate", ctrl.activateDoctor);
 router.patch("/doctors/:id/deactivate", ctrl.deactivateDoctor);
 
