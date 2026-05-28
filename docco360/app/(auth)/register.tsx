@@ -21,35 +21,39 @@ type Role = 'PATIENT' | 'DOCTOR';
 
 export default function RegisterScreen() {
   const { register } = useAuth();
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<Role>('PATIENT');
   const [specialization, setSpecialization] = useState('');
+  const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!name.trim() || name.trim().length < 2) newErrors.name = 'Name must be at least 2 characters';
-    if (!phone.trim()) newErrors.phone = 'Phone number is required';
-    else if (phone.trim().length < 7) newErrors.phone = 'Enter a valid phone number';
-    if (!email.trim()) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Invalid email format';
-    if (!password) newErrors.password = 'Password is required';
-    else if (password.length < 8) newErrors.password = 'Must be at least 8 characters';
+    if (!firstName.trim() || firstName.trim().length < 2) newErrors.firstName = 'Required';
+    if (!lastName.trim() || lastName.trim().length < 2) newErrors.lastName = 'Required';
+    if (!phone.trim()) newErrors.phone = 'Required';
+    else if (phone.trim().length < 7) newErrors.phone = 'Invalid';
+    if (!email.trim()) newErrors.email = 'Required';
+    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Invalid email';
+    if (!password) newErrors.password = 'Required';
+    else if (password.length < 8) newErrors.password = 'Must be at least 8 chars';
     else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password))
-      newErrors.password = 'Must contain uppercase, lowercase, and number';
+      newErrors.password = 'Too weak';
     if (role === 'DOCTOR' && !specialization.trim())
-      newErrors.specialization = 'Please enter your medical specialization';
+      newErrors.specialization = 'Required';
+    if (!agreed) newErrors.agreed = 'You must agree to the terms';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const getPasswordStrength = () => {
-    if (!password) return { level: 0, label: 'Enter a password', color: Colors.border };
+    if (!password) return { level: 0, label: '', color: Colors.border };
     let score = 0;
     if (password.length >= 8) score++;
     if (/[A-Z]/.test(password)) score++;
@@ -68,8 +72,9 @@ export default function RegisterScreen() {
     setLoading(true);
     setErrors({});
     try {
+      const fullName = `${firstName.trim()} ${lastName.trim()}`;
       const { requiresApproval } = await register(
-        name.trim(),
+        fullName,
         email.trim().toLowerCase(),
         password,
         role,
@@ -77,10 +82,8 @@ export default function RegisterScreen() {
         role === 'DOCTOR' ? specialization.trim() : undefined,
       );
       if (requiresApproval) {
-        // Doctor — navigate to the waiting screen, do NOT log them in
         router.replace('/(auth)/pending-approval');
       } else {
-        // Patient — tokens are stored, route through index to the dashboard
         router.replace('/');
       }
     } catch (error) {
@@ -102,6 +105,14 @@ export default function RegisterScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Mobile Top Header */}
+      <View style={styles.topHeader}>
+        <View style={styles.topHeaderLeft}>
+          <Ionicons name="leaf" size={24} color={Colors.primary} />
+          <Text style={styles.topHeaderTitle}>Docco360</Text>
+        </View>
+      </View>
+
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -111,23 +122,11 @@ export default function RegisterScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Top Navbar Header */}
-          <View style={styles.topHeader}>
-            <View style={styles.topHeaderLeft}>
-              <Ionicons name="medical" size={24} color={Colors.primary} />
-              <Text style={styles.topHeaderTitle}>Docco360</Text>
-            </View>
-            <TouchableOpacity style={styles.helpButton}>
-              <Ionicons name="help-circle-outline" size={24} color={Colors.primary} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Main Auth Card */}
-          <View style={styles.card}>
+          <View style={styles.contentWrapper}>
             {/* Header & Branding */}
             <View style={styles.header}>
-              <Text style={styles.appName}>Create Account</Text>
-              <Text style={styles.tagline}>Your journey to serenity starts here.</Text>
+              <Text style={styles.appName}>Create an account</Text>
+              <Text style={styles.tagline}>Please complete your profile to continue</Text>
             </View>
 
             {/* Role Selection Tabs */}
@@ -142,7 +141,7 @@ export default function RegisterScreen() {
                 style={[styles.roleTab, role === 'DOCTOR' && styles.roleTabActive]}
                 onPress={() => setRole('DOCTOR')}
               >
-                <Text style={[styles.roleTabText, role === 'DOCTOR' && styles.roleTabTextActive]}>Doctor</Text>
+                <Text style={[styles.roleTabText, role === 'DOCTOR' && styles.roleTabTextActive]}>Doctor / Provider</Text>
               </TouchableOpacity>
             </View>
 
@@ -155,27 +154,28 @@ export default function RegisterScreen() {
                 </View>
               )}
 
-              <Input
-                label="Full Name"
-                placeholder="John Doe"
-                icon="person-outline"
-                autoCapitalize="words"
-                value={name}
-                onChangeText={setName}
-                error={errors.name}
-              />
-
-              <Input
-                label="Email Address"
-                placeholder="name@email.com"
-                icon="mail-outline"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                value={email}
-                onChangeText={setEmail}
-                error={errors.email}
-              />
+              <View style={styles.row}>
+                <View style={styles.col}>
+                  <Input
+                    label="First Name"
+                    placeholder="Jane"
+                    autoCapitalize="words"
+                    value={firstName}
+                    onChangeText={setFirstName}
+                    error={errors.firstName}
+                  />
+                </View>
+                <View style={styles.col}>
+                  <Input
+                    label="Last Name"
+                    placeholder="Doe"
+                    autoCapitalize="words"
+                    value={lastName}
+                    onChangeText={setLastName}
+                    error={errors.lastName}
+                  />
+                </View>
+              </View>
 
               <Input
                 label="Phone Number"
@@ -185,6 +185,18 @@ export default function RegisterScreen() {
                 value={phone}
                 onChangeText={setPhone}
                 error={errors.phone}
+              />
+
+              <Input
+                label="Email Address"
+                placeholder="jane.doe@example.com"
+                icon="mail-outline"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                value={email}
+                onChangeText={setEmail}
+                error={errors.email}
               />
 
               <View style={styles.passwordContainer}>
@@ -200,25 +212,27 @@ export default function RegisterScreen() {
                   error={errors.password}
                 />
                 {/* Strength Meter */}
-                <View style={styles.strengthContainer}>
-                  <View style={styles.strengthBarsRow}>
-                    {[1, 2, 3, 4].map((i) => (
-                      <View
-                        key={i}
-                        style={[
-                          styles.strengthBar,
-                          {
-                            backgroundColor:
-                              i <= strength.level ? strength.color : Colors.borderLight,
-                          },
-                        ]}
-                      />
-                    ))}
+                {password.length > 0 && (
+                  <View style={styles.strengthContainer}>
+                    <View style={styles.strengthBarsRow}>
+                      {[1, 2, 3, 4].map((i) => (
+                        <View
+                          key={i}
+                          style={[
+                            styles.strengthBar,
+                            {
+                              backgroundColor:
+                                i <= strength.level ? strength.color : Colors.borderLight,
+                            },
+                          ]}
+                        />
+                      ))}
+                    </View>
+                    <Text style={[styles.strengthLabel, { color: Colors.textTertiary }]}>
+                      {strength.label}
+                    </Text>
                   </View>
-                  <Text style={[styles.strengthLabel, { color: strength.level > 0 ? strength.color : Colors.textTertiary }]}>
-                    {strength.label}
-                  </Text>
-                </View>
+                )}
               </View>
 
               {role === 'DOCTOR' && (
@@ -233,16 +247,21 @@ export default function RegisterScreen() {
                 />
               )}
 
-              {/* Terms Checkbox placeholder - visual only for matching design */}
-              <View style={styles.termsContainer}>
-                <Ionicons name="checkbox" size={20} color={Colors.primary} />
+              <TouchableOpacity 
+                style={styles.termsContainer}
+                activeOpacity={0.7}
+                onPress={() => setAgreed(!agreed)}
+              >
+                <View style={[styles.checkbox, agreed && styles.checkboxActive, errors.agreed && { borderColor: Colors.danger }]}>
+                  {agreed && <Ionicons name="checkmark" size={12} color="#fff" />}
+                </View>
                 <Text style={styles.termsText}>
                   I agree to the <Text style={styles.termsLink}>Terms of Service</Text> and <Text style={styles.termsLink}>Privacy Policy</Text>.
                 </Text>
-              </View>
+              </TouchableOpacity>
 
               <Button
-                title="Register Account"
+                title="Create Account"
                 onPress={handleRegister}
                 loading={loading}
                 fullWidth
@@ -251,13 +270,32 @@ export default function RegisterScreen() {
               />
             </View>
 
+            {/* Divider */}
+            <View style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>Or register with</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            {/* Social Logins */}
+            <View style={styles.socialContainer}>
+              <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
+                <Ionicons name="logo-google" size={20} color="#EA4335" />
+                <Text style={styles.socialButtonText}>Google</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
+                <Ionicons name="logo-apple" size={20} color="#000" />
+                <Text style={styles.socialButtonText}>Apple</Text>
+              </TouchableOpacity>
+            </View>
+
             {/* Login Link */}
             <View style={styles.footer}>
               <Text style={styles.footerText}>
                 Already have an account?{' '}
               </Text>
               <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
-                <Text style={styles.footerLink}>Log in</Text>
+                <Text style={styles.footerLink}>Sign in</Text>
               </TouchableOpacity>
             </View>
 
@@ -273,20 +311,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingTop: Spacing.xl,
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xxl,
-  },
   topHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: Spacing.xxl,
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'transparent',
+    backgroundColor: Colors.background,
   },
   topHeaderLeft: {
     flexDirection: 'row',
@@ -298,16 +330,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.primary,
   },
-  helpButton: {
-    padding: Spacing.sm,
+  keyboardView: {
+    flex: 1,
   },
-  card: {
-    backgroundColor: Colors.surface,
-    borderRadius: Radii.xl,
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
     padding: Spacing.xl,
-    ...Shadows.lg,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
+  },
+  contentWrapper: {
     width: '100%',
     maxWidth: 480,
     alignSelf: 'center',
@@ -317,7 +348,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   appName: {
-    fontSize: Fonts.sizes.xxxl,
+    fontSize: Fonts.sizes.xxl,
     fontWeight: '700',
     color: Colors.text,
     marginBottom: Spacing.xs,
@@ -326,10 +357,11 @@ const styles = StyleSheet.create({
     fontSize: Fonts.sizes.md,
     color: Colors.textSecondary,
     fontWeight: '400',
+    textAlign: 'center',
   },
   roleTabsContainer: {
     flexDirection: 'row',
-    backgroundColor: Colors.primaryFaded,
+    backgroundColor: Colors.borderLight,
     borderRadius: Radii.md,
     padding: 4,
     marginBottom: Spacing.xl,
@@ -337,20 +369,20 @@ const styles = StyleSheet.create({
   roleTab: {
     flex: 1,
     paddingVertical: Spacing.md,
-    borderRadius: Radii.sm,
+    borderRadius: Radii.sm - 2,
     alignItems: 'center',
   },
   roleTabActive: {
-    backgroundColor: '#2e72da', // primary-container from design
+    backgroundColor: Colors.surface,
     ...Shadows.sm,
   },
   roleTabText: {
-    fontSize: Fonts.sizes.md,
+    fontSize: Fonts.sizes.sm,
     fontWeight: '600',
     color: Colors.textSecondary,
   },
   roleTabTextActive: {
-    color: Colors.surface,
+    color: Colors.primary,
   },
   form: {
     marginBottom: Spacing.lg,
@@ -370,18 +402,25 @@ const styles = StyleSheet.create({
     flex: 1,
     fontWeight: '500',
   },
+  row: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  col: {
+    flex: 1,
+  },
   passwordContainer: {
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.xs,
   },
   strengthContainer: {
-    marginTop: Spacing.sm,
-    paddingHorizontal: Spacing.xs,
+    marginTop: 4,
+    paddingHorizontal: 4,
   },
   strengthBarsRow: {
     flexDirection: 'row',
-    gap: Spacing.xs,
-    height: 4,
-    marginBottom: Spacing.xs,
+    gap: 4,
+    height: 6,
+    marginBottom: 4,
   },
   strengthBar: {
     flex: 1,
@@ -389,16 +428,31 @@ const styles = StyleSheet.create({
   },
   strengthLabel: {
     fontSize: 10,
-    textTransform: 'uppercase',
     fontWeight: '600',
-    letterSpacing: 0.5,
+    textAlign: 'right',
   },
   termsContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: Spacing.sm,
+    marginTop: Spacing.md,
     marginBottom: Spacing.lg,
-    paddingHorizontal: Spacing.xs,
+    paddingHorizontal: 4,
+  },
+  checkbox: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.surfaceAlt,
+    marginTop: 2,
+  },
+  checkboxActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   termsText: {
     flex: 1,
@@ -411,13 +465,50 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   submitButton: {
-    marginTop: Spacing.sm,
+    marginTop: Spacing.xs,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.lg,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.borderLight,
+  },
+  dividerText: {
+    marginHorizontal: Spacing.md,
+    fontSize: Fonts.sizes.xs,
+    color: Colors.textTertiary,
+  },
+  socialContainer: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  socialButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    backgroundColor: Colors.surface,
+    paddingVertical: Spacing.md,
+    borderRadius: Radii.lg,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+  socialButtonText: {
+    fontSize: Fonts.sizes.sm,
+    fontWeight: '500',
+    color: Colors.text,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: Spacing.md,
+    marginBottom: Spacing.xl,
   },
   footerText: {
     fontSize: Fonts.sizes.md,
@@ -426,6 +517,7 @@ const styles = StyleSheet.create({
   footerLink: {
     fontSize: Fonts.sizes.md,
     color: Colors.primary,
-    fontWeight: '700',
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
 });
