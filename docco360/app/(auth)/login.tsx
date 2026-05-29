@@ -156,7 +156,7 @@ export default function LoginScreen() {
                 <Ionicons name="logo-apple" size={20} color="#000" />
                 <Text style={styles.socialButtonText}>Apple ID</Text>
               </TouchableOpacity>
-            </View> 
+            </View>
 
             {/* Register Link */}
             <View style={styles.footer}>
