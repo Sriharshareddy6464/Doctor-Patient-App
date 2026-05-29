@@ -1,29 +1,48 @@
-name: Backend CI
+name: Deploy to EC2
 
 on:
-  push:
-    branches: ["main", "staging"]
-    paths:
-      - 'backend/**'
+  workflow_run:
+    workflows: ["Backend CI", "Frontend CI"]
+    branches: ["main"]
+    types:
+      - completed
+  workflow_dispatch:
 
 jobs:
-  build-and-push-backend:
+  deploy:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to DockerHub
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-
-      - name: Build backend image
+      - name: Setup SSH key
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/doc-backend:latest ./backend
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
-      - name: Push backend image
+      - name: Add EC2 to known hosts
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/doc-backend:latest
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy on EC2
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+            cd doctoroncall
+
+            # Pull specific SHA tagged images
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/doc-backend:${{ github.event.workflow_run.head_sha || github.sha }}
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/doc-frontend:${{ github.event.workflow_run.head_sha || github.sha }}
+
+            # Update compose to use SHA tagged images
+            export BACKEND_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/doc-backend:${{ github.event.workflow_run.head_sha || github.sha }}
+            export FRONTEND_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/doc-frontend:${{ github.event.workflow_run.head_sha || github.sha }}
+
+            docker compose up -d --force-recreate
+            docker image prune -f
+          EOF
