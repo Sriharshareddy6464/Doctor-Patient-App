@@ -20,12 +20,12 @@ jobs:
       - name: Login to DockerHub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-      - name: Build frontend image
+      - name: Build and push frontend image
         run: |
           docker build \
-            --build-arg VITE_API_URL=http://${{ secrets.EC2_HOST }}:5000/api \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/doc-frontend:latest ./frontend
-
-      - name: Push frontend image
-        run: |
+            --build-arg VITE_API_URL=/api \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/doc-frontend:latest \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/doc-frontend:${{ github.sha }} \
+            ./frontend
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/doc-frontend:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/doc-frontend:${{ github.sha }}

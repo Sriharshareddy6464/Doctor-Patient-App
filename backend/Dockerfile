@@ -24,18 +24,13 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --omit=dev
 
-# Copy Prisma files first
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
-# Run prisma generate in production stage to create .prisma/client
+# Generate Prisma client in production stage
 RUN npx prisma generate
 
-# Copy compiled output
 COPY --from=builder /app/dist ./dist
-
-# Copy generated Prisma client
-COPY --from=builder /app/src/generated ./src/generated
 
 RUN chown -R appuser:appgroup /app
 
