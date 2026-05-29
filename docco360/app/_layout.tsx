@@ -18,6 +18,7 @@ export default function RootLayout() {
         <Stack.Screen name="(patient)" />
         <Stack.Screen name="(doctor)" />
         <Stack.Screen name="(admin)" />
+        <Stack.Screen name="call" options={{ animation: 'fade', gestureEnabled: false }} />
       </Stack>
     </AuthProvider>
   );

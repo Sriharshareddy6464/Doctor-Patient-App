@@ -7,8 +7,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
@@ -156,12 +156,12 @@ export default function LoginScreen() {
                 <Ionicons name="logo-apple" size={20} color="#000" />
                 <Text style={styles.socialButtonText}>Apple ID</Text>
               </TouchableOpacity>
-            </View>
+            </View> 
 
             {/* Register Link */}
             <View style={styles.footer}>
               <Text style={styles.footerText}>
-                Don't have an account?{' '}
+                {"Don't have an account? "}
               </Text>
               <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
                 <Text style={styles.footerLink}>Sign up for free</Text>

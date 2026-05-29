@@ -7,8 +7,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
@@ -108,7 +108,6 @@ export default function RegisterScreen() {
       {/* Mobile Top Header */}
       <View style={styles.topHeader}>
         <View style={styles.topHeaderLeft}>
-          <Ionicons name="leaf" size={24} color={Colors.primary} />
           <Text style={styles.topHeaderTitle}>Docco360</Text>
         </View>
       </View>
@@ -141,7 +140,7 @@ export default function RegisterScreen() {
                 style={[styles.roleTab, role === 'DOCTOR' && styles.roleTabActive]}
                 onPress={() => setRole('DOCTOR')}
               >
-                <Text style={[styles.roleTabText, role === 'DOCTOR' && styles.roleTabTextActive]}>Doctor / Provider</Text>
+                <Text style={[styles.roleTabText, role === 'DOCTOR' && styles.roleTabTextActive]}>Doctor</Text>
               </TouchableOpacity>
             </View>
 
@@ -326,7 +325,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   topHeaderTitle: {
-    fontSize: Fonts.sizes.xl,
+    fontSize: Fonts.sizes.xxl,
     fontWeight: '700',
     color: Colors.primary,
   },
