@@ -6,45 +6,51 @@ Rather than stopping at a working application, the focus of this project is infr
 
 The project progressively evolved through multiple deployment stages:
 
-Local Development → Docker → EC2 Deployment → SSL + RDS → S3 + CloudFront + ALB Architecture → CI/CD → Infrastructure Roadmap
+**Local Development → Docker → EC2 Deployment → Amazon RDS Integration → CI/CD Automation → Cloud Architecture Evolution**
 
 ---
 
-## Why Docco360?
+# Why Docco360?
 
 Most portfolio projects stop after "it works on localhost."
 
 Docco360 focuses on what happens after that:
 
-- Packaging applications for reproducible deployment
-- Moving from monolithic hosting to decoupled architecture
-- Introducing managed cloud services
-- Improving deployment workflows
-- Applying DevOps principles progressively
+* Packaging applications for reproducible deployment
+* Moving from monolithic hosting to decoupled architecture
+* Introducing managed cloud services
+* Improving deployment workflows
+* Applying DevOps principles progressively
 
 The objective was not building another consultation app.
 
-The objective was learning how systems mature.
+The objective was understanding how systems mature from development environments into cloud-hosted deployments.
 
 ---
 
 # Features
 
-### Application Layer
-- Real-time doctor-patient consultation workflow
-- WebRTC-based communication
-- Full-stack application architecture
-- Secure session handling
+## Application Layer
 
-### DevOps & Cloud Layer
-- Dockerized deployment workflow
-- EC2-hosted backend infrastructure
-- Amazon RDS integration
-- S3 static hosting
-- CloudFront CDN delivery
-- Application Load Balancer routing
-- VPC network isolation
-- GitHub Actions CI/CD
+* Real-time doctor-patient consultation workflow
+* WebRTC-based communication
+* Full-stack application architecture
+* Secure session handling
+* Role-based access control
+* Appointment management workflow
+
+---
+
+## DevOps & Cloud Layer
+
+* Dockerized deployment workflow
+* Amazon EC2 hosted infrastructure
+* Amazon RDS PostgreSQL integration
+* SSL-secured database connectivity
+* Decoupled application and database architecture
+* GitHub Actions CI/CD pipelines
+* Docker Hub image registry
+* Environment-based deployment configuration
 
 ---
 
@@ -108,173 +114,252 @@ Browser -------------------------> API Requests
 # Tech Stack
 
 ## Frontend
-- React
+
+* React
+* TypeScript
+* Vite
+
+---
 
 ## Backend
-- Node.js
 
-## Real-time Communication
-- WebRTC
+* Node.js
+* Express.js
+* TypeScript
+* Prisma ORM
+
+---
+
+## Database
+
+* PostgreSQL
+* Amazon RDS
+
+---
+
+## Real-Time Communication
+
+* WebRTC
+* Agora
+
+---
 
 ## Containerization
-- Docker
+
+* Docker
+* Docker Compose
+
+---
 
 ## Cloud Infrastructure
-- Amazon EC2
-- Amazon RDS
-- Amazon S3
-- Amazon CloudFront
-- VPC
-- Application Load Balancer
-- Security Groups
+
+* Amazon EC2
+* Amazon RDS
+* Security Groups
+
+---
 
 ## CI/CD
-- GitHub Actions
+
+* GitHub Actions
+* Docker Hub
+
+---
 
 ## Supporting Services
-- NGINX
-- Docker Hub
-- CloudWatch
-- Prometheus
-- Grafana
+
+* NGINX
+* Prisma
+* PostgreSQL
+* Git
 
 ---
 
 # Deployment Evolution
 
-## V1 — First Internet Deployment
+## V1 — Initial Internet Deployment
 
-Initial application deployment:
+Initial application deployment focused on taking the project from local development to public accessibility.
 
-- Local development
-- Docker containerization
-- Docker Hub image publishing
-- EC2 deployment
+Implemented:
 
-Goal:
-
-Take application from localhost to live internet access.
+* Local development workflow
+* Docker containerization
+* Docker Hub image publishing
+* Amazon EC2 deployment
 
 ---
 
-## V2 — Security + Data Separation
+## V2 — Data Layer Modernization
 
-Improvements:
+Infrastructure improvements focused on separating compute and persistent storage.
 
-- SSL/TLS integration
-- Database moved to Amazon RDS
-- Reduced coupling
+Implemented:
 
-Goal:
+* Migration from containerized PostgreSQL to Amazon RDS PostgreSQL
+* SSL-secured database connectivity
+* Separation of application and database layers
+* Reduced infrastructure coupling
+* Improved persistence and operational reliability
 
-Move from "works online" to "structured deployment"
-
----
 
 ## V3 — Cloud Architecture Refactor
 
-Major changes:
+Infrastructure improvements focused on network isolation, security hardening, and service separation.
 
-- Frontend migrated to S3
-- CloudFront CDN introduced
-- Backend isolated inside VPC
-- ALB routing introduced
+Implemented:
 
-Goal:
-
-Move toward production-style separation.
+* Amazon S3 integration for object and file storage
+* CloudFront CDN integration for content delivery
+* Custom VPC architecture
+* Public and private subnet segregation
+* Internet Gateway (IGW) configuration
+* NAT Gateway deployment
+* Route table configuration
+* Bastion Host deployment
+* Backend migration to private EC2
+* RDS migration to private subnets
+* Security Group redesign and least-privilege access controls
+* Application Load Balancer (ALB) integration
+* Target Group configuration
+* End-to-end HTTPS/TLS implementation
 
 ---
 
-## V4 — Planned Infrastructure Roadmap
+## V4 — Observability & Operations Platform
 
-Upcoming improvements:
+Infrastructure improvements focused on monitoring, visibility, operational readiness, and production observability.
 
-- Terraform
-- AWS CLI workflows
-- Auto Scaling Groups
-- Infrastructure as Code
-- Deployment automation
-- Stronger observability
+Implemented:
+
+* Amazon CloudWatch integration
+* Centralized application logging
+* Infrastructure metrics collection
+* CloudWatch alarms and monitoring
+* Prometheus deployment
+* Grafana deployment
+* EC2 monitoring dashboards
+* Container monitoring dashboards
+* Database monitoring dashboards
+* Application health monitoring
+* Performance and resource utilization tracking
+* Alerting and incident visibility workflows
+* Operational observability layer for infrastructure and services
+
+
+Result:
+
+```text
+Before
+
+Frontend Container
+Backend Container
+PostgreSQL Container
+
+After
+
+Frontend Container
+Backend Container
+Amazon RDS PostgreSQL
+```
 
 ---
 
 # Deployment Workflow
-
-```text
+```
 Local Development
-
-      ↓
+        |
+        v
 
 Docker Build
+        |
+        v
 
-      ↓
+Docker Hub
+        |
+        v
 
-Push Image → Docker Hub
+GitHub Actions CI/CD
+        |
+        v
 
-      ↓
+Amazon EC2 (Backend)
+        |
+        +----------------------+
+        |                      |
+        v                      v
 
-Deploy → EC2
+Amazon RDS            Amazon S3
+PostgreSQL            Object Storage
+        |                      |
+        +----------+-----------+
+                   |
+                   v
 
-      ↓
+CloudFront CDN
+                   |
+                   v
 
-Database → Amazon RDS
+Application Load Balancer
+                   |
+                   v
 
-      ↓
-
-Frontend → S3
-
-      ↓
-
-CDN → CloudFront
-
-      ↓
-
-Traffic Routing → ALB
-
-      ↓
-
-CI/CD → GitHub Actions
+Internet Users
 ```
-
 ---
 
 # Engineering Problems Solved
 
 ## Runtime Drift
 
-Applications behaving differently inside Docker compared to localhost.
+Applications behaved differently inside Docker compared to local development environments.
 
 Solved through:
 
-- environment standardization
-- container debugging
-- deployment isolation
+* Environment standardization
+* Container debugging
+* Consistent deployment workflows
 
 ---
 
 ## Container Reachability
 
-Container availability does not automatically mean public accessibility.
+Container availability did not automatically guarantee public accessibility.
 
-Required debugging:
+Required investigation of:
 
-- security groups
-- exposed ports
-- inbound rules
-- networking layers
+* Security groups
+* Exposed ports
+* Inbound rules
+* Docker networking
+* EC2 networking
 
 ---
 
-## Architecture Refactoring
+## Database Migration
 
-Migrating infrastructure without rebuilding application logic.
+Migrated from a self-hosted PostgreSQL container to Amazon RDS PostgreSQL without changing application business logic.
 
 Required:
 
-- frontend/backend separation
-- routing redesign
-- cloud service integration
+* Infrastructure refactoring
+* Prisma reconfiguration
+* SSL database connectivity
+* Environment migration
+* Deployment updates
+
+---
+
+## Service Decoupling
+
+Separated persistent data storage from application compute resources.
+
+Benefits:
+
+* Independent lifecycle management
+* Improved maintainability
+* Better production readiness
+* Reduced operational risk
 
 ---
 
@@ -286,56 +371,89 @@ This project demonstrates:
 
 ✓ Docker workflows
 
-✓ VPC networking understanding
-
 ✓ CI/CD implementation
 
-✓ architecture evolution
+✓ PostgreSQL administration
 
-✓ cloud engineering practices
+✓ Amazon RDS integration
 
-✓ production-oriented thinking
+✓ Infrastructure migration
 
----
+✓ Cloud engineering practices
 
-# Not Yet Implemented
+✓ Deployment automation
 
-Current project does not claim:
-
-- enterprise-grade resilience
-- autoscaling
-- full test coverage
-- incident management
-- complete infrastructure automation
+✓ Production-oriented architecture thinking
 
 ---
 
-# Future Roadmap
+# Engineering Highlights
 
-- Terraform provisioning
-- Auto Scaling Group integration
-- AWS CLI operational workflows
-- deployment validation
-- health monitoring
-- improved observability
-- deployment runbooks
+* Successfully migrated application data from a containerized PostgreSQL instance to Amazon RDS PostgreSQL.
+* Implemented SSL-secured connectivity between application services and managed database infrastructure.
+* Reduced infrastructure coupling by separating compute and persistent storage layers.
+* Built automated deployment workflows using Docker, Docker Hub, GitHub Actions, and AWS services.
+* Applied cloud architecture principles through progressive infrastructure evolution and service separation.
 
----
-
-# Lessons Learned
-
-Building software is only step one.
-
-Making software deployable, scalable, observable, and maintainable is a completely different engineering challenge.
-
-Docco360 was built to understand that transition.
+Docco360 serves as both an application platform and an ongoing cloud engineering project focused on practical infrastructure modernization.
 
 ---
 
-## Author
+# Contributors
 
-Sri Harsha
+## Sri Harsha
 
-Cloud | DevOps | AI Systems Engineering
+**Cloud & DevOps Engineer**
 
-Building systems from idea → deployment → infrastructure.
+Responsibilities:
+
+* AWS Infrastructure
+* Docker Deployment Architecture
+* CI/CD Pipelines
+* Cloud Operations
+* System Architecture
+* Amazon RDS Migration
+* Infrastructure Evolution
+
+GitHub: https://github.com/sriharshareddy6464
+
+---
+
+## Shashi Varun Reddy
+
+**Backend & DevOps Engineer**
+
+Responsibilities:
+
+* Backend Development
+* API Architecture
+* Database Integration
+* Service Implementation
+* Business Logic Development
+
+GitHub: https://github.com/Shashivarunreddy
+
+---
+
+## Vivek Varma
+
+**Frontend & UI Engineer**
+
+Responsibilities:
+
+* Frontend Development
+* User Interface Engineering
+* User Experience Design
+* React Implementation
+
+GitHub: https://github.com/vivekvarma-01
+
+---
+
+# Project Philosophy
+
+Building software is only the beginning.
+
+Making software deployable, maintainable, observable, and production-ready requires a completely different set of engineering decisions.
+
+Docco360 was built to explore that transition through practical cloud infrastructure, deployment workflows, and system architecture evolution.
