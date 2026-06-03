@@ -20,6 +20,7 @@ interface ButtonProps {
   fullWidth?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  className?: string;
 }
 
 export function Button({
