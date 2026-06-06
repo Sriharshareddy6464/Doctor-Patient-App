@@ -1,31 +1,47 @@
-name: Frontend CI
+name: Frontend CI/CD
 
 on:
-  push:
-    branches: ["main", "staging"]
-    paths:
-      - 'frontend/**'
+push:
+branches: ["main", "staging"]
+paths:
+- "frontend/**"
 
 jobs:
-  build-and-push-frontend:
-    runs-on: ubuntu-latest
+build-and-deploy:
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+defaults:
+  run:
+    working-directory: frontend
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+steps:
+  - name: Checkout Repository
+    uses: actions/checkout@v4
 
-      - name: Login to DockerHub
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+  - name: Setup Node.js
+    uses: actions/setup-node@v4
+    with:
+      node-version: 22
 
-      - name: Build and push frontend image
-        run: |
-          docker build \
-            --build-arg VITE_API_URL=/api \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/doc-frontend:latest \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/doc-frontend:${{ github.sha }} \
-            ./frontend
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/doc-frontend:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/doc-frontend:${{ github.sha }}
+  - name: Install Dependencies
+    run: npm ci
+
+  - name: Build Frontend
+    run: npm run build
+
+  - name: Configure AWS Credentials
+    uses: aws-actions/configure-aws-credentials@v4
+    with:
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws-region: ${{ secrets.AWS_REGION }}
+
+  - name: Upload Build to S3
+    run: |
+      aws s3 sync dist/ s3://${{ secrets.S3_BUCKET_NAME }} --delete
+
+  - name: Invalidate CloudFront Cache
+    run: |
+      aws cloudfront create-invalidation \
+        --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+        --paths "/"
