@@ -7,8 +7,6 @@ import {
   Briefcase,
   Eye,
   AlertCircle,
-  ShieldCheck,
-  FileText,
   ToggleLeft,
   ToggleRight,
   Ban,
