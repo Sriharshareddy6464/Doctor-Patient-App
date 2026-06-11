@@ -13,7 +13,6 @@ import { Loader2 } from 'lucide-react';
 interface RejectModalProps {
   open: boolean;
   doctorName: string;
-  phase: 1 | 2;
   onConfirm: (reason: string) => void | Promise<void>;
   onCancel: () => void;
   loading?: boolean;
@@ -22,7 +21,6 @@ interface RejectModalProps {
 export const RejectModal = ({
   open,
   doctorName,
-  phase,
   onConfirm,
   onCancel,
   loading = false,
@@ -51,18 +49,14 @@ export const RejectModal = ({
               Reject Dr. {doctorName}?
             </DialogTitle>
             <DialogDescription className="text-zinc-500 text-sm font-medium mt-1">
-              Phase {phase} rejection — {phase === 1 ? 'Basic account review' : 'Credential verification'}
+              Provide a reason for rejecting the doctor's verification.
             </DialogDescription>
           </DialogHeader>
 
           <textarea
             rows={4}
             className="w-full p-3 border border-zinc-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-rose-400 bg-white text-zinc-800 placeholder-zinc-400"
-            placeholder={
-              phase === 1
-                ? 'e.g. Unable to verify your identity. Please re-register with correct details.'
-                : 'e.g. License number is invalid. Please correct and re-submit.'
-            }
+            placeholder="e.g. License number is invalid or expired. Please correct and re-submit."
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             disabled={loading}

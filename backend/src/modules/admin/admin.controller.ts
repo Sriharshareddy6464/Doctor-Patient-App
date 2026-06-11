@@ -36,20 +36,12 @@ const requireId = (req: Request): string => {
   return id;
 };
 
-// ── Phase 1 ──
-export const approvePhase1 = handle(async (req) => adminService.approvePhase1(requireId(req)));
+// ── Verification ──
+export const approveDoctor = handle(async (req) => adminService.approveDoctor(requireId(req)));
 
-export const rejectPhase1 = handle(async (req) => {
+export const rejectDoctor = handle(async (req) => {
   const { reason } = req.body as { reason?: string };
-  return adminService.rejectPhase1(requireId(req), reason ?? "");
-});
-
-// ── Phase 2 ──
-export const approvePhase2 = handle(async (req) => adminService.approvePhase2(requireId(req)));
-
-export const rejectPhase2 = handle(async (req) => {
-  const { reason } = req.body as { reason?: string };
-  return adminService.rejectPhase2(requireId(req), reason ?? "");
+  return adminService.rejectDoctor(requireId(req), reason ?? "");
 });
 
 // ── Phase 3 ──

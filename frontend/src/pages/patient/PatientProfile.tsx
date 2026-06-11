@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { patientService } from '../../services/patient.service';
-import { Link } from 'react-router-dom';
 import {
   User, ShieldCheck, Calendar, HeartHandshake, FileSpreadsheet,
-  MapPin, PhoneCall, Plus, X, Loader2, ChevronLeft,
+  MapPin, PhoneCall, Plus, X, Loader2,
 } from 'lucide-react';
 
 interface PatientProfileData {
@@ -124,13 +123,6 @@ const PatientProfile: React.FC = () => {
 
   return (
     <div className="max-w-4xl space-y-6">
-      <Link
-        to="/patient-dashboard"
-        className="inline-flex items-center text-sm font-medium text-[#555555] hover:text-black transition-colors border border-[#e1e1e1] bg-white hover:bg-[#efefef] px-3 py-1.5 rounded-sm"
-      >
-        <ChevronLeft size={14} className="mr-1" /> Back to Overview
-      </Link>
-
       {/* Page header */}
       <div className="mb-2">
         <div className="flex items-center gap-3 mb-1">

@@ -22,26 +22,22 @@ import type { DoctorRow } from '../types';
 interface DoctorCardProps {
   doctor: DoctorRow;
   actionLoading?: string | null;
-  onApprovePhase1?: (id: string) => void;
-  onApprovePhase2?: (id: string) => void;
-  onReject?: (id: string, name: string, phase: 1 | 2) => void;
+  onApprove?: (id: string) => void;
+  onReject?: (id: string, name: string) => void;
   onToggleAppointments?: (id: string, currentVal: boolean) => void;
   onToggleDoctor?: (id: string, currentVal: boolean) => void;
-  showPhase1Actions?: boolean;
-  showPhase2Actions?: boolean;
+  showVerificationActions?: boolean;
   showAllActions?: boolean;
 }
 
 export const DoctorCard = ({
   doctor,
   actionLoading = null,
-  onApprovePhase1,
-  onApprovePhase2,
+  onApprove,
   onReject,
   onToggleAppointments,
   onToggleDoctor,
-  showPhase1Actions = false,
-  showPhase2Actions = false,
+  showVerificationActions = false,
   showAllActions = false,
 }: DoctorCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -87,7 +83,7 @@ export const DoctorCard = ({
                 Banned / Deactivated
               </span>
             )}
-            {profile?.canTakeAppointments && status === 'PHASE2_APPROVED' && (
+            {profile?.canTakeAppointments && status === 'APPROVED' && (
               <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border bg-emerald-50 border-emerald-200 text-emerald-600 tracking-wide uppercase">
                 ✦ Accepting Patients
               </span>
@@ -126,45 +122,17 @@ export const DoctorCard = ({
 
         {/* Action Column */}
         <div className="flex flex-wrap items-center gap-2 shrink-0 md:self-center">
-          {/* Phase 1 specific view */}
-          {showPhase1Actions && status === 'PHASE1_PENDING' && (
+          {/* Verification actions */}
+          {showVerificationActions && status === 'PENDING' && (
             <>
               <Button
                 size="sm"
                 className="bg-black hover:bg-[#333] text-white rounded-sm font-bold h-9 shadow-sm"
                 disabled={actionLoading !== null}
-                onClick={() => onApprovePhase1?.(doctor.id)}
+                onClick={() => onApprove?.(doctor.id)}
               >
                 {getActionButtonContent(
-                  `p1-approve-${doctor.id}`,
-                  <CheckCircle size={14} />,
-                  'Approve'
-                )}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-[#e1e1e1] text-black hover:bg-[#f0f0f0] rounded-sm font-bold h-9"
-                disabled={actionLoading !== null}
-                onClick={() => onReject?.(doctor.id, doctor.name, 1)}
-              >
-                <XCircle size={14} />
-                <span className="ml-1.5">Reject</span>
-              </Button>
-            </>
-          )}
-
-          {/* Phase 2 specific view */}
-          {showPhase2Actions && status === 'PHASE2_PENDING' && (
-            <>
-              <Button
-                size="sm"
-                className="bg-black hover:bg-[#333] text-white rounded-sm font-bold h-9 shadow-sm"
-                disabled={actionLoading !== null}
-                onClick={() => onApprovePhase2?.(doctor.id)}
-              >
-                {getActionButtonContent(
-                  `p2-approve-${doctor.id}`,
+                  `approve-${doctor.id}`,
                   <CheckCircle size={14} />,
                   'Verify'
                 )}
@@ -174,7 +142,7 @@ export const DoctorCard = ({
                 variant="outline"
                 className="border-[#e1e1e1] text-black hover:bg-[#f0f0f0] rounded-sm font-bold h-9"
                 disabled={actionLoading !== null}
-                onClick={() => onReject?.(doctor.id, doctor.name, 2)}
+                onClick={() => onReject?.(doctor.id, doctor.name)}
               >
                 <XCircle size={14} />
                 <span className="ml-1.5">Reject</span>
@@ -185,18 +153,18 @@ export const DoctorCard = ({
           {/* All Actions (All Doctors Tab) */}
           {showAllActions && (
             <>
-              {status === 'PHASE1_PENDING' && (
+              {status === 'PENDING' && (
                 <>
                   <Button
                     size="sm"
                     className="bg-black hover:bg-[#333] text-white rounded-sm font-bold h-9 shadow-sm"
                     disabled={actionLoading !== null}
-                    onClick={() => onApprovePhase1?.(doctor.id)}
+                    onClick={() => onApprove?.(doctor.id)}
                   >
                     {getActionButtonContent(
-                      `p1-approve-${doctor.id}`,
+                      `approve-${doctor.id}`,
                       <CheckCircle size={14} />,
-                      'P1 Approve'
+                      'Verify'
                     )}
                   </Button>
                   <Button
@@ -204,7 +172,7 @@ export const DoctorCard = ({
                     variant="outline"
                     className="border-[#e1e1e1] text-black hover:bg-[#f0f0f0] rounded-sm font-bold h-9"
                     disabled={actionLoading !== null}
-                    onClick={() => onReject?.(doctor.id, doctor.name, 1)}
+                    onClick={() => onReject?.(doctor.id, doctor.name)}
                   >
                     <XCircle size={14} />
                     <span className="ml-1.5">Reject</span>
@@ -212,35 +180,8 @@ export const DoctorCard = ({
                 </>
               )}
 
-              {status === 'PHASE2_PENDING' && (
-                <>
-                  <Button
-                    size="sm"
-                    className="bg-black hover:bg-[#333] text-white rounded-sm font-bold h-9 shadow-sm"
-                    disabled={actionLoading !== null}
-                    onClick={() => onApprovePhase2?.(doctor.id)}
-                  >
-                    {getActionButtonContent(
-                      `p2-approve-${doctor.id}`,
-                      <CheckCircle size={14} />,
-                      'P2 Verify'
-                    )}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-[#e1e1e1] text-black hover:bg-[#f0f0f0] rounded-sm font-bold h-9"
-                    disabled={actionLoading !== null}
-                    onClick={() => onReject?.(doctor.id, doctor.name, 2)}
-                  >
-                    <XCircle size={14} />
-                    <span className="ml-1.5">Reject</span>
-                  </Button>
-                </>
-              )}
-
-              {/* Phase 3 Booking Activation */}
-              {status === 'PHASE2_APPROVED' && (
+              {/* Booking Activation */}
+              {status === 'APPROVED' && (
                   <Button
                     size="sm"
                     variant="outline"
@@ -263,25 +204,23 @@ export const DoctorCard = ({
               )}
 
               {/* Ban / Activate doctor account */}
-              {status === 'PHASE2_APPROVED' && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className={
-                      doctor.isActive
-                        ? 'border-[#e1e1e1] text-black hover:bg-[#f0f0f0] rounded-sm font-bold h-9'
-                        : 'border-[#e1e1e1] text-black hover:bg-[#f0f0f0] rounded-sm font-bold h-9'
-                    }
-                    disabled={actionLoading !== null}
-                  onClick={() => onToggleDoctor?.(doctor.id, doctor.isActive)}
-                >
-                  {getActionButtonContent(
-                    `toggle-doc-${doctor.id}`,
-                    doctor.isActive ? <Ban size={14} /> : <Play size={14} />,
-                    doctor.isActive ? 'Ban' : 'Activate'
-                  )}
-                </Button>
-              )}
+              <Button
+                size="sm"
+                variant="outline"
+                className={
+                  doctor.isActive
+                    ? 'border-[#e1e1e1] text-black hover:bg-[#f0f0f0] rounded-sm font-bold h-9'
+                    : 'border-[#e1e1e1] text-black hover:bg-[#f0f0f0] rounded-sm font-bold h-9'
+                }
+                disabled={actionLoading !== null}
+                onClick={() => onToggleDoctor?.(doctor.id, doctor.isActive)}
+              >
+                {getActionButtonContent(
+                  `toggle-doc-${doctor.id}`,
+                  doctor.isActive ? <Ban size={14} /> : <Play size={14} />,
+                  doctor.isActive ? 'Ban' : 'Activate'
+                )}
+              </Button>
             </>
           )}
 
@@ -338,7 +277,7 @@ export const DoctorCard = ({
                     profile.canTakeAppointments ? 'text-green-600' : 'text-zinc-500'
                   }`}
                 >
-                  {status === 'PHASE2_APPROVED'
+                  {status === 'APPROVED'
                     ? profile.canTakeAppointments
                       ? '✓ Accepting Appointments'
                       : '✗ Bookings Disabled'
@@ -353,20 +292,8 @@ export const DoctorCard = ({
             <div className="bg-[#fafafa] border border-[#e1e1e1] rounded-sm p-4 flex gap-3 items-start">
               <AlertCircle size={16} className="text-black shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-bold text-black">Phase 1 Rejection Reason</p>
+                <p className="text-xs font-bold text-black">Rejection Reason</p>
                 <p className="text-sm text-[#555555] font-medium mt-1">{profile.rejectionReason}</p>
-              </div>
-            </div>
-          )}
-
-          {profile.phase2RejectionReason && (
-            <div className="bg-[#fafafa] border border-[#e1e1e1] rounded-sm p-4 flex gap-3 items-start">
-              <AlertCircle size={16} className="text-black shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-bold text-black">Phase 2 Rejection Reason</p>
-                <p className="text-sm text-[#555555] font-medium mt-1">
-                  {profile.phase2RejectionReason}
-                </p>
               </div>
             </div>
           )}

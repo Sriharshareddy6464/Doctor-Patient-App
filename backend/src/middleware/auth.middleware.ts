@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyAccessToken, TokenPayload } from "../utils/jwt";
+import { prisma } from "../config/prisma";
 
 /**
  * Extend Express Request to include the `user` property
@@ -55,7 +56,7 @@ export const authenticate = (
  * Usage: authorize("ADMIN", "DOCTOR")
  */
 export const authorize = (...allowedRoles: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
@@ -70,6 +71,25 @@ export const authorize = (...allowedRoles: string[]) => {
       });
     }
 
-    next();
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.userId },
+        select: { isActive: true },
+      });
+
+      if (!user || !user.isActive) {
+        return res.status(403).json({
+          success: false,
+          message: "Forbidden. Your account has been deactivated or blocked.",
+        });
+      }
+
+      next();
+    } catch (err) {
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error during authorization.",
+      });
+    }
   };
 };

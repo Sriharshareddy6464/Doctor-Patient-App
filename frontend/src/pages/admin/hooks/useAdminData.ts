@@ -119,10 +119,8 @@ export const useAdminData = (activeTab: string) => {
       if (!silent) setListLoading(true);
       try {
         const statusParam =
-          activeTab === 'phase1'
-            ? 'PHASE1_PENDING'
-            : activeTab === 'phase2'
-            ? 'PHASE2_PENDING'
+          activeTab === 'verification'
+            ? 'PENDING'
             : doctorStatus;
 
         const res = await adminService.getAllDoctors({
@@ -266,7 +264,7 @@ export const useAdminData = (activeTab: string) => {
       if (!silent) setIsRefreshing(true);
       const promises: Promise<unknown>[] = [loadStats(silent)];
 
-      if (['phase1', 'phase2', 'doctors'].includes(activeTab)) {
+      if (['verification', 'doctors'].includes(activeTab)) {
         promises.push(loadDoctors(doctorPagination.page, silent));
       } else if (activeTab === 'patients') {
         promises.push(loadPatients(patientPagination.page, silent));
@@ -349,17 +347,11 @@ export const useAdminData = (activeTab: string) => {
     }
   };
 
-  const approvePhase1 = (id: string) =>
-    executeAction(`p1-approve-${id}`, () => adminService.approvePhase1(id), 'Phase 1 registration approved!');
+  const approveDoctor = (id: string) =>
+    executeAction(`approve-${id}`, () => adminService.approveDoctor(id), 'Doctor credentials verified!');
 
-  const rejectPhase1 = (id: string, reason: string) =>
-    executeAction(`reject-${id}`, () => adminService.rejectPhase1(id, reason), 'Phase 1 registration rejected.');
-
-  const approvePhase2 = (id: string) =>
-    executeAction(`p2-approve-${id}`, () => adminService.approvePhase2(id), 'Phase 2 credentials verified!');
-
-  const rejectPhase2 = (id: string, reason: string) =>
-    executeAction(`reject-${id}`, () => adminService.rejectPhase2(id, reason), 'Phase 2 credentials rejected.');
+  const rejectDoctor = (id: string, reason: string) =>
+    executeAction(`reject-${id}`, () => adminService.rejectDoctor(id, reason), 'Doctor verification rejected.');
 
   const toggleAppointments = (id: string, currentVal: boolean) =>
     executeAction(
@@ -420,10 +412,8 @@ export const useAdminData = (activeTab: string) => {
     setAppointmentPagination: (page: number) => setAppointmentPagination((p) => ({ ...p, page })),
 
     // Actions
-    approvePhase1,
-    rejectPhase1,
-    approvePhase2,
-    rejectPhase2,
+    approveDoctor,
+    rejectDoctor,
     toggleAppointments,
     toggleDoctorActive,
     cancelAppointment,

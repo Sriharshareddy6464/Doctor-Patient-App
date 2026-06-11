@@ -13,10 +13,6 @@ import {
   LogOut,
   Menu,
   X,
-  Settings,
-  Plus,
-  Bell,
-  Search,
 } from 'lucide-react';
 
 // Custom Hooks
@@ -24,7 +20,6 @@ import { useAdminData } from './hooks/useAdminData';
 
 // Sub-components
 import { AdminOverview } from './components/AdminOverview';
-import { Phase1Queue } from './components/Phase1Queue';
 import { Phase2Queue } from './components/Phase2Queue';
 import { DoctorManagement } from './components/DoctorManagement';
 import { PatientManagement } from './components/PatientManagement';
@@ -78,10 +73,8 @@ const AdminDashboard = () => {
     setAppointmentPagination,
 
     // Actions
-    approvePhase1,
-    rejectPhase1,
-    approvePhase2,
-    rejectPhase2,
+    approveDoctor,
+    rejectDoctor,
     toggleAppointments,
     toggleDoctorActive,
     cancelAppointment,
@@ -91,7 +84,6 @@ const AdminDashboard = () => {
   const [rejectModalState, setRejectModalState] = useState<{
     id: string;
     name: string;
-    phase: 1 | 2;
   } | null>(null);
 
   const handleTabChange = (val: Tab) => {
@@ -101,12 +93,8 @@ const AdminDashboard = () => {
 
   const handleConfirmRejection = async (reason: string) => {
     if (!rejectModalState) return;
-    const { id, phase } = rejectModalState;
-    if (phase === 1) {
-      await rejectPhase1(id, reason);
-    } else {
-      await rejectPhase2(id, reason);
-    }
+    const { id } = rejectModalState;
+    await rejectDoctor(id, reason);
     setRejectModalState(null);
   };
 
@@ -119,16 +107,10 @@ const AdminDashboard = () => {
   const navItems: { id: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: 'overview', label: 'Overview', icon: <Activity size={18} /> },
     {
-      id: 'phase1',
-      label: 'Phase 1 Queue',
-      icon: <ShieldCheck size={18} />,
-      badge: stats?.phase1Pending,
-    },
-    {
-      id: 'phase2',
-      label: 'Phase 2 Queue',
+      id: 'verification',
+      label: 'Pending Verification',
       icon: <FileText size={18} />,
-      badge: stats?.phase2Pending,
+      badge: stats?.pendingApprovals,
     },
     { id: 'doctors', label: 'All Doctors', icon: <UserCheck size={18} /> },
     { id: 'patients', label: 'Patients', icon: <Users size={18} /> },
@@ -153,13 +135,6 @@ const AdminDashboard = () => {
               <p className="text-xs text-[#555555]">Clinical Admin</p>
             </div>
           </div>
-          <button
-            onClick={() => handleTabChange('appointments')}
-            className="mt-4 mx-2 bg-white border border-[#e1e1e1] text-black font-medium text-sm py-2 rounded hover:bg-[#efefef] transition-colors flex items-center justify-center gap-2"
-          >
-            <Plus size={18} />
-            New Appointment
-          </button>
         </div>
 
         <ul className="flex-1 px-3 space-y-1 overflow-y-auto">
@@ -230,13 +205,6 @@ const AdminDashboard = () => {
               <p className="text-xs text-[#555555]">Clinical Admin</p>
             </div>
           </div>
-          <button
-            onClick={() => handleTabChange('appointments')}
-            className="mt-4 mx-2 bg-white border border-[#e1e1e1] text-black font-medium text-sm py-2 rounded hover:bg-[#efefef] transition-colors flex items-center justify-center gap-2"
-          >
-            <Plus size={18} />
-            New Appointment
-          </button>
         </div>
 
         <ul className="flex-1 px-3 space-y-1 overflow-y-auto">
@@ -246,16 +214,16 @@ const AdminDashboard = () => {
               <li key={item.id}>
                 <button
                   onClick={() => handleTabChange(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded text-sm font-bold transition-all relative cursor-pointer ${
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors relative cursor-pointer ${
                     isActive
-                      ? 'border-l-4 border-[#855300] bg-[#855300]/10 text-[#ffddb8] font-extrabold scale-95 duration-150'
-                      : 'text-[#bec6e0] hover:text-white hover:bg-white/5'
+                      ? 'text-black bg-[#efefef] font-medium'
+                      : 'text-[#555555] hover:bg-[#efefef]'
                   }`}
                 >
                   {item.icon}
                   <span>{item.label}</span>
                   {item.badge !== undefined && item.badge > 0 && (
-                    <span className="absolute right-4 bg-[#ba1a1a] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full animate-pulse">
+                    <span className="absolute right-2 bg-black text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm">
                       {item.badge}
                     </span>
                   )}
@@ -276,51 +244,18 @@ const AdminDashboard = () => {
         </div>
       </nav>
 
+      {/* ── Mobile hamburger (floating, no header) ── */}
+      <button
+        onClick={() => setMobileSidebarOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-40 w-9 h-9 flex items-center justify-center bg-white border border-[#e1e1e1] rounded text-black hover:bg-[#efefef] transition-colors cursor-pointer shadow-sm"
+        aria-label="Open navigation"
+      >
+        <Menu size={18} />
+      </button>
+
       {/* ── Main Content Area ── */}
-      <div className="flex-1 lg:ml-[260px] flex flex-col min-w-0 bg-white">
-        {/* ── TopNavBar ── */}
-        <header className="sticky top-0 w-full flex justify-between items-center px-6 py-4 h-[64px] bg-white z-40 border-b border-[#e1e1e1]">
-          {/* Mobile hamburger menu toggle */}
-          <button
-            onClick={() => setMobileSidebarOpen(true)}
-            className="lg:hidden text-black hover:bg-[#efefef] p-1 rounded transition-colors mr-2 cursor-pointer"
-          >
-            <Menu size={20} />
-          </button>
-
-          {/* Search bar */}
-          <div className="hidden md:flex items-center rounded border border-[#e1e1e1] px-2 py-1 hover:border-[#cccccc] transition-colors bg-white">
-            <Search size={18} className="text-[#555555]" />
-            <input
-              type="text"
-              placeholder="Search patients, doctors..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent border-none focus:ring-0 text-sm text-black w-[240px] px-2 outline-none placeholder:text-[#999999]"
-            />
-          </div>
-
-          <div className="flex items-center gap-4 ml-auto">
-            <button className="text-black hover:bg-[#efefef] p-1.5 rounded transition-colors relative cursor-pointer">
-              <Bell size={20} />
-              <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-black rounded-full" />
-            </button>
-            <button className="text-black hover:bg-[#efefef] p-1.5 rounded transition-colors cursor-pointer hidden sm:block">
-              <Settings size={20} />
-            </button>
-
-            <div className="w-8 h-8 rounded border border-[#e1e1e1] overflow-hidden cursor-pointer ml-2">
-              <img
-                alt="Admin Profile"
-                className="w-full h-full object-cover grayscale"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDI2wfBrMTA_oXZedgjd2Otw4GA9sRiCFCU7nlIsGgpWFz4hVfedGnOO4rrb2nmBxsAtjh3QrTB43yhnLT5XGOseE7C4JU0uUheyS11Zs9ptwOschOET0zyCoxigjwU5qDzeYZFD_Rmd5DqFzTsg1lGruufuUHQfftC3MfSu7a0KqUPvAUpsVrNMXmEtiAfI3cSOTAXbTr8aZ444z57VMO6qtrvZvFHF-KbT6VNKFZBKvdqxDMW8mOoIe7-MAAzhWrSshvivrs8Yik"
-              />
-            </div>
-          </div>
-        </header>
-
-        {/* ── Page Content ── */}
-        <main className="flex-1 p-6 lg:p-8 overflow-x-hidden">
+      <div className="flex-1 lg:ml-[260px] min-w-0 bg-white">
+        <main className="p-6 lg:p-8 overflow-x-hidden pt-16 lg:pt-8">
           {/* Tab Contents */}
           {currentTab === 'overview' && (
             <div className="space-y-6">
@@ -338,24 +273,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {currentTab === 'phase1' && (
-            <Phase1Queue
-              doctors={doctors}
-              loading={listLoading}
-              actionLoading={actionLoading}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              onRefresh={() => refreshData(false)}
-              lastUpdated={lastUpdated}
-              isRefreshing={isRefreshing}
-              onApprove={approvePhase1}
-              onReject={(id, name, phase) => setRejectModalState({ id, name, phase })}
-              pagination={doctorPagination}
-              onPageChange={setDoctorPagination}
-            />
-          )}
-
-          {currentTab === 'phase2' && (
+          {currentTab === 'verification' && (
             <Phase2Queue
               doctors={doctors}
               loading={listLoading}
@@ -365,8 +283,8 @@ const AdminDashboard = () => {
               onRefresh={() => refreshData(false)}
               lastUpdated={lastUpdated}
               isRefreshing={isRefreshing}
-              onApprove={approvePhase2}
-              onReject={(id, name, phase) => setRejectModalState({ id, name, phase })}
+              onApprove={approveDoctor}
+              onReject={(id, name) => setRejectModalState({ id, name })}
               pagination={doctorPagination}
               onPageChange={setDoctorPagination}
             />
@@ -384,9 +302,8 @@ const AdminDashboard = () => {
               onRefresh={() => refreshData(false)}
               lastUpdated={lastUpdated}
               isRefreshing={isRefreshing}
-              onApprovePhase1={approvePhase1}
-              onApprovePhase2={approvePhase2}
-              onReject={(id, name, phase) => setRejectModalState({ id, name, phase })}
+              onApprove={approveDoctor}
+              onReject={(id, name) => setRejectModalState({ id, name })}
               onToggleAppointments={toggleAppointments}
               onToggleDoctor={toggleDoctorActive}
               pagination={doctorPagination}
@@ -445,7 +362,6 @@ const AdminDashboard = () => {
       <RejectModal
         open={rejectModalState !== null}
         doctorName={rejectModalState?.name || ''}
-        phase={rejectModalState?.phase || 1}
         onConfirm={handleConfirmRejection}
         onCancel={() => setRejectModalState(null)}
         loading={actionLoading?.startsWith('reject-')}

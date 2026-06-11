@@ -13,9 +13,9 @@ export interface User {
   role: Role;
   createdAt?: string;
   doctorProfile?: {
-    approvalStatus: 'PHASE1_PENDING' | 'PHASE1_APPROVED' | 'PHASE2_PENDING' | 'PHASE2_APPROVED' | 'PHASE2_REJECTED' | 'REJECTED';
+    approvalStatus: 'NEEDS_DETAILS' | 'PENDING' | 'APPROVED' | 'REJECTED';
     canTakeAppointments: boolean;
-    phase2RejectionReason?: string | null;
+    rejectionReason?: string | null;
   } | null;
   patientProfile?: {
     id: string;

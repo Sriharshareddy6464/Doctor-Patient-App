@@ -208,45 +208,18 @@ export const MainLayout = () => {
         </div>
       </nav>
 
+      {/* ── Mobile hamburger (floating, no header) ── */}
+      <button
+        onClick={() => setMobileSidebarOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-40 w-9 h-9 flex items-center justify-center bg-white border border-[#e1e1e1] rounded text-black hover:bg-[#efefef] transition-colors cursor-pointer shadow-sm"
+        aria-label="Open navigation"
+      >
+        <Menu size={18} />
+      </button>
+
       {/* ── Main Content Area ── */}
-      <div className="flex-1 lg:ml-[260px] flex flex-col min-w-0 bg-white">
-
-        {/* ── Top Header ── */}
-        <header className="sticky top-0 w-full flex justify-between items-center px-6 py-4 h-[64px] bg-white z-40 border-b border-[#e1e1e1]">
-          {/* Mobile hamburger */}
-          <button
-            onClick={() => setMobileSidebarOpen(true)}
-            className="lg:hidden text-black hover:bg-[#efefef] p-1 rounded transition-colors mr-2 cursor-pointer"
-          >
-            <Menu size={20} />
-          </button>
-
-          {/* Page breadcrumb label (desktop) */}
-          <div className="hidden lg:block">
-            <span className="text-sm text-[#555555] font-medium">
-              {navLinks.find((l) => isLinkActive(l.path))?.label ?? 'Dashboard'}
-            </span>
-          </div>
-
-          {/* Right actions */}
-          <div className="flex items-center gap-3 ml-auto">
-            <div className="hidden sm:flex items-center gap-2 text-sm text-[#555555]">
-              <div className="w-2 h-2 bg-black rounded-full" />
-              <span className="font-medium">{user?.name}</span>
-            </div>
-            <div className="w-px h-5 bg-[#e1e1e1] hidden sm:block" />
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-[#e1e1e1] text-sm text-[#555555] hover:bg-[#efefef] hover:text-black transition-colors cursor-pointer"
-            >
-              <LogOut size={14} />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
-          </div>
-        </header>
-
-        {/* ── Page Content ── */}
-        <main className="flex-1 p-6 lg:p-8 overflow-x-hidden">
+      <div className="flex-1 lg:ml-[260px] min-w-0 bg-white">
+        <main className="p-6 lg:p-8 overflow-x-hidden pt-16 lg:pt-8">
           <Outlet />
         </main>
       </div>

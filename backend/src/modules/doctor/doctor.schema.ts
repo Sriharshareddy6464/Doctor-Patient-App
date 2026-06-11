@@ -58,6 +58,12 @@ export const createTimeSlotsSchema = z.object({
       message: "Cannot create slots for a past date",
     }),
 
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "End date must be in YYYY-MM-DD format")
+    .optional()
+    .nullable(),
+
   startTime: z
     .string()
     .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Must be in HH:mm format"),
@@ -68,6 +74,9 @@ export const createTimeSlotsSchema = z.object({
 }).refine(data => data.startTime < data.endTime, {
   message: "Start time must be before end time",
   path: ["endTime"],
+}).refine(data => !data.endDate || data.endDate >= data.date, {
+  message: "End date must be on or after start date",
+  path: ["endDate"],
 });
 
 export type CreateTimeSlotsInput = z.infer<typeof createTimeSlotsSchema>;

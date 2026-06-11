@@ -39,13 +39,13 @@ export const register = async (data: RegisterInput) => {
     });
 
     if (data.role === "DOCTOR") {
-      // Create a DoctorProfile immediately at registration (Phase 1)
+      // Create a DoctorProfile immediately at registration
       await tx.doctorProfile.create({
         data: {
           userId: newUser.id,
           phone: data.phone ?? null,
           specializations: data.specialization ? [data.specialization] : [],
-          approvalStatus: DoctorApprovalStatus.PHASE1_PENDING,
+          approvalStatus: DoctorApprovalStatus.NEEDS_DETAILS,
         },
       });
     } else {
@@ -61,21 +61,7 @@ export const register = async (data: RegisterInput) => {
     return newUser;
   });
 
-  // Doctors must wait for admin Phase 1 approval before they can log in.
-  // Do NOT issue tokens — they cannot be logged in yet.
-  if (data.role === "DOCTOR") {
-    return {
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-      requiresApproval: true,
-    };
-  }
-
-  // For all other roles (PATIENT), issue tokens immediately.
+  // Generate tokens for both PATIENT and DOCTOR immediately.
   const tokenPayload: TokenPayload = {
     userId: user.id,
     email: user.email,
@@ -126,24 +112,6 @@ export const login = async (data: LoginInput) => {
     throw { status: 403, message: "Your account has been deactivated. Please contact support." };
   }
 
-  // Doctors must pass Phase 1 approval before they can log in
-  if (user.role === "DOCTOR") {
-    const profile = await prisma.doctorProfile.findUnique({ where: { userId: user.id } });
-
-    if (!profile || profile.approvalStatus === DoctorApprovalStatus.PHASE1_PENDING) {
-      throw {
-        status: 403,
-        message: "Your account is pending admin approval (Phase 1). You will be notified once approved.",
-      };
-    }
-
-    if (profile.approvalStatus === DoctorApprovalStatus.REJECTED) {
-      const reason = profile.rejectionReason ? ` Reason: ${profile.rejectionReason}` : "";
-      throw { status: 403, message: `Your doctor application was not approved.${reason}` };
-    }
-
-    // PHASE1_APPROVED, PHASE2_PENDING, PHASE2_APPROVED, PHASE2_REJECTED — all can log in
-  }
 
   // Generate tokens
   const tokenPayload: TokenPayload = {
@@ -248,7 +216,7 @@ export const getProfile = async (userId: string) => {
         select: {
           approvalStatus: true,
           canTakeAppointments: true,
-          phase2RejectionReason: true,
+          rejectionReason: true,
         },
       },
       patientProfile: {

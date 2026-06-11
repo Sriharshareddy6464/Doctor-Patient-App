@@ -1,11 +1,9 @@
 // ─── Admin Dashboard Types ────────────────────────────────────────────────────
 
 export type DoctorApprovalStatus =
-  | 'PHASE1_PENDING'
-  | 'PHASE1_APPROVED'
-  | 'PHASE2_PENDING'
-  | 'PHASE2_APPROVED'
-  | 'PHASE2_REJECTED'
+  | 'NEEDS_DETAILS'
+  | 'PENDING'
+  | 'APPROVED'
   | 'REJECTED';
 
 export interface Stats {
@@ -31,7 +29,6 @@ export interface DoctorRow {
   doctorProfile: {
     approvalStatus: DoctorApprovalStatus;
     rejectionReason?: string | null;
-    phase2RejectionReason?: string | null;
     specializations: string[];
     experience: number;
     consultationFee?: number | null;
@@ -69,7 +66,7 @@ export interface AppointmentRow {
   patient: { name: string };
 }
 
-export type Tab = 'overview' | 'phase1' | 'phase2' | 'doctors' | 'patients' | 'appointments' | 'analytics';
+export type Tab = 'overview' | 'verification' | 'doctors' | 'patients' | 'appointments' | 'analytics';
 
 // ─── Pagination ───────────────────────────────────────────────────────────────
 
@@ -154,11 +151,9 @@ export interface AnalyticsData {
 // ─── Status Config ────────────────────────────────────────────────────────────
 
 export const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
-  PHASE1_PENDING:  { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700', label: 'Phase 1 · Pending' },
-  PHASE1_APPROVED: { bg: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: 'Phase 1 · Approved' },
-  PHASE2_PENDING:  { bg: 'bg-orange-50 border-orange-200', text: 'text-orange-700', label: 'Phase 2 · Under Review' },
-  PHASE2_APPROVED: { bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', label: 'Phase 2 · Verified' },
-  PHASE2_REJECTED: { bg: 'bg-rose-50 border-rose-200', text: 'text-rose-600', label: 'Phase 2 · Rejected' },
+  NEEDS_DETAILS:   { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700', label: 'Needs Details' },
+  PENDING:         { bg: 'bg-orange-50 border-orange-200', text: 'text-orange-700', label: 'Pending Verification' },
+  APPROVED:        { bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', label: 'Verified' },
   REJECTED:        { bg: 'bg-red-50 border-red-200', text: 'text-red-700', label: 'Rejected' },
   CONFIRMED:       { bg: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: 'Confirmed' },
   COMPLETED:       { bg: 'bg-zinc-100 border-zinc-200', text: 'text-zinc-600', label: 'Completed' },
@@ -166,19 +161,16 @@ export const statusConfig: Record<string, { bg: string; text: string; label: str
   IN_PROGRESS:     { bg: 'bg-purple-50 border-purple-200', text: 'text-purple-700', label: 'In Progress' },
   NOT_STARTED:     { bg: 'bg-zinc-50 border-zinc-200', text: 'text-zinc-500', label: 'Not Started' },
   PAID:            { bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-600', label: 'Paid' },
-  PENDING:         { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700', label: 'Pending' },
 };
 
 export const getStatus = (doc: DoctorRow): DoctorApprovalStatus =>
-  doc.doctorProfile?.approvalStatus ?? 'PHASE1_PENDING';
+  doc.doctorProfile?.approvalStatus ?? 'NEEDS_DETAILS';
 
 export const doctorStatusOptions = [
   { value: '', label: 'All Statuses' },
-  { value: 'PHASE1_PENDING', label: 'Phase 1 Pending' },
-  { value: 'PHASE1_APPROVED', label: 'Phase 1 Approved' },
-  { value: 'PHASE2_PENDING', label: 'Phase 2 Pending' },
-  { value: 'PHASE2_APPROVED', label: 'Phase 2 Approved' },
-  { value: 'PHASE2_REJECTED', label: 'Phase 2 Rejected' },
+  { value: 'NEEDS_DETAILS', label: 'Needs Details' },
+  { value: 'PENDING', label: 'Pending Verification' },
+  { value: 'APPROVED', label: 'Verified' },
   { value: 'REJECTED', label: 'Rejected' },
 ];
 

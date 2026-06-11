@@ -12,10 +12,12 @@ const VerificationPending: React.FC = () => {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(false);
 
-  // If approved, send to doctor workspace
+  // Enforce correct routing based on verification status
   useEffect(() => {
-    if (user?.doctorProfile?.approvalStatus === 'PHASE2_APPROVED') {
+    if (user?.doctorProfile?.approvalStatus === 'APPROVED') {
       navigate('/doctor-dashboard', { replace: true });
+    } else if (user?.doctorProfile?.approvalStatus === 'NEEDS_DETAILS' || user?.doctorProfile?.approvalStatus === 'REJECTED' || !user?.doctorProfile?.approvalStatus) {
+      navigate('/doctor-dashboard/setup', { replace: true });
     }
   }, [user, navigate]);
 

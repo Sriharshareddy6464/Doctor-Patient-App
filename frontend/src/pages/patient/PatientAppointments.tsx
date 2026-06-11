@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import { type Appointment } from '../../types/appointment';
-import { CalendarDays, Clock, Video, ChevronLeft, User } from 'lucide-react';
+import { CalendarDays, Clock, Video, User } from 'lucide-react';
 
 const statusLabels: Record<string, string> = {
   CONFIRMED: 'Confirmed',
@@ -48,13 +48,6 @@ const PatientAppointments = () => {
 
   return (
     <div className="max-w-4xl space-y-6">
-      <Link
-        to="/patient-dashboard"
-        className="inline-flex items-center text-sm font-medium text-[#555555] hover:text-black transition-colors border border-[#e1e1e1] bg-white hover:bg-[#efefef] px-3 py-1.5 rounded-sm"
-      >
-        <ChevronLeft size={14} className="mr-1" /> Back to Overview
-      </Link>
-
       {/* Page header */}
       <div className="mb-2">
         <div className="flex items-center gap-3 mb-1">

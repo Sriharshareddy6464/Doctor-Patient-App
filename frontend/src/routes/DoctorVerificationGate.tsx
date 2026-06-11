@@ -21,14 +21,14 @@ export const DoctorVerificationGate: React.FC = () => {
   const status = user.doctorProfile?.approvalStatus;
 
   // Enforce redirection to the appropriate step page
-  if (status === 'PHASE1_APPROVED' || status === 'PHASE2_REJECTED' || !status) {
+  if (status === 'NEEDS_DETAILS' || status === 'REJECTED' || !status) {
     return <Navigate to="/doctor-dashboard/setup" replace />;
   }
 
-  if (status === 'PHASE2_PENDING' || status === 'PHASE1_PENDING') {
+  if (status === 'PENDING') {
     return <Navigate to="/doctor-dashboard/pending" replace />;
   }
 
-  // PHASE2_APPROVED status allows standard access to the dashboard
+  // APPROVED status allows standard access to the dashboard
   return <Outlet />;
 };

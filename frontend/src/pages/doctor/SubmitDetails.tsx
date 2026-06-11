@@ -30,13 +30,15 @@ const SubmitDetails: React.FC = () => {
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  const isResubmit = user?.doctorProfile?.approvalStatus === 'PHASE2_REJECTED';
-  const rejectionReason = user?.doctorProfile?.phase2RejectionReason;
+  const isResubmit = user?.doctorProfile?.approvalStatus === 'REJECTED';
+  const rejectionReason = user?.doctorProfile?.rejectionReason;
 
-  // Protect screen from already approved users
+  // Protect screen from already approved/pending users
   useEffect(() => {
-    if (user?.doctorProfile?.approvalStatus === 'PHASE2_APPROVED') {
+    if (user?.doctorProfile?.approvalStatus === 'APPROVED') {
       navigate('/doctor-dashboard', { replace: true });
+    } else if (user?.doctorProfile?.approvalStatus === 'PENDING') {
+      navigate('/doctor-dashboard/pending', { replace: true });
     }
   }, [user, navigate]);
 
@@ -185,9 +187,9 @@ const SubmitDetails: React.FC = () => {
           </div>
           
           <div className="flex justify-between text-xs font-bold text-zinc-500 max-w-[500px] mx-auto px-1">
-            <span className="text-green-600">Account Approved</span>
-            <span className="text-primary text-center">Verify Credentials</span>
-            <span className="text-right">Awaiting Launch</span>
+            <span className="text-green-600">Registered</span>
+            <span className="text-primary text-center">Submit Details</span>
+            <span className="text-right">Pending Review</span>
           </div>
         </div>
 
@@ -212,7 +214,7 @@ const SubmitDetails: React.FC = () => {
                 {isResubmit ? 'Update Credentials' : 'Submit Credentials'}
               </h2>
               <p className="text-zinc-500 text-sm font-semibold">
-                Phase 2 — Provide professional details and practicing license.
+                Provide professional details and practicing license.
               </p>
             </div>
             <span className="px-3 py-1 text-xs font-bold rounded-full border border-orange-200 bg-orange-50 text-primary">
