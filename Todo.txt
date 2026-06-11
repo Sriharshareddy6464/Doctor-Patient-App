@@ -1,0 +1,27 @@
+Features :
+
+
+
+
+Improvements :
+
+1) remove phase1 and 2 combined both, once doctor creates an id passowrd , 
+he can login directly , but after login it is manadatort to fill all his details , 
+he cannot escape that , if he tries to escape it should prompt again and again 
+until he fills all the details. after submiting the details , then adter admin verifies his 
+profile then only he can login and move to his dashboard , when admin rejects he should se
+it is rejectd and reason of rejection , he can retry again and submit all the details, 
+aftera approved, admin can on/off permisson to take appointments , this can be done 
+in his dashbaord by admin using a toggle button. then doctor can create his slots 
+or calendar acc to his will(make slot creation process easy), the patient can book and continue
+with call as usual. admin can block any doctor anytime, by clicking on doctor card in admin dashboard.
+when doctor is blocked he cannot login or take appointments.  
+
+
+2) Mofifiy manager avalability , make it easy to add/remove
+    slots and days ,  like doctor can choose the days he is available,
+    and for each day he can choose the time slots he is available, 
+    for each time slot, and make time slots creation easy.
+
+Fixes:
+

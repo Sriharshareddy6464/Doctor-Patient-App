@@ -15,7 +15,7 @@ interface Phase2QueueProps {
   lastUpdated: Date | null;
   isRefreshing: boolean;
   onApprove: (id: string) => void;
-  onReject: (id: string, name: string, phase: 1 | 2) => void;
+  onReject: (id: string, name: string) => void;
   pagination: PaginationMeta;
   onPageChange: (page: number) => void;
 }
@@ -35,7 +35,7 @@ export const Phase2Queue = ({
   onPageChange,
 }: Phase2QueueProps) => {
   const pendingDoctors = doctors.filter(
-    (d) => (d.doctorProfile?.approvalStatus ?? 'PHASE1_PENDING') === 'PHASE2_PENDING'
+    (d) => (d.doctorProfile?.approvalStatus ?? 'NEEDS_DETAILS') === 'PENDING'
   );
 
   return (
@@ -46,7 +46,7 @@ export const Phase2Queue = ({
           <FileText size={20} />
         </div>
         <div>
-          <h2 className="text-lg font-extrabold text-zinc-900">Phase 2 — Credential Verification</h2>
+          <h2 className="text-lg font-extrabold text-zinc-900">Doctor Verification Queue</h2>
           <p className="text-[#555555] text-xs font-semibold">
             Doctors who have uploaded qualifications, licenses, and professional records for audit.
           </p>
@@ -77,7 +77,7 @@ export const Phase2Queue = ({
         <EmptyState
           icon={<CheckCircle size={24} className="text-emerald-500" />}
           title="All caught up!"
-          subtitle="No profiles are currently pending Phase 2 validation."
+          subtitle="No profiles are currently pending validation."
         />
       ) : (
         <div className="space-y-4">
@@ -87,9 +87,9 @@ export const Phase2Queue = ({
                 key={doc.id}
                 doctor={doc}
                 actionLoading={actionLoading}
-                onApprovePhase2={onApprove}
+                onApprove={onApprove}
                 onReject={onReject}
-                showPhase2Actions
+                showVerificationActions
               />
             ))}
           </div>

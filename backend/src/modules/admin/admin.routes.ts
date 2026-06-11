@@ -10,13 +10,9 @@ router.get("/analytics", ctrl.getAnalytics);
 // Doctor management
 router.get("/doctors", ctrl.getAllDoctors);
 
-// Phase 1 actions
-router.patch("/doctors/:id/approve-phase1", ctrl.approvePhase1);
-router.patch("/doctors/:id/reject-phase1", ctrl.rejectPhase1);
-
-// Phase 2 actions
-router.patch("/doctors/:id/approve-phase2", ctrl.approvePhase2);
-router.patch("/doctors/:id/reject-phase2", ctrl.rejectPhase2);
+// Verification actions
+router.patch("/doctors/:id/approve", ctrl.approveDoctor);
+router.patch("/doctors/:id/reject", ctrl.rejectDoctor);
 
 // Phase 3 — appointment toggle
 router.patch("/doctors/:id/toggle-appointments", ctrl.toggleAppointments);

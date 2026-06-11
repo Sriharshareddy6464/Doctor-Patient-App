@@ -25,9 +25,8 @@ interface DoctorManagementProps {
   onRefresh: () => void;
   lastUpdated: Date | null;
   isRefreshing: boolean;
-  onApprovePhase1: (id: string) => void;
-  onApprovePhase2: (id: string) => void;
-  onReject: (id: string, name: string, phase: 1 | 2) => void;
+  onApprove: (id: string) => void;
+  onReject: (id: string, name: string) => void;
   onToggleAppointments: (id: string, currentVal: boolean) => void;
   onToggleDoctor: (id: string, currentVal: boolean) => void;
   pagination: PaginationMeta;
@@ -45,8 +44,7 @@ export const DoctorManagement = ({
   onRefresh,
   lastUpdated,
   isRefreshing,
-  onApprovePhase1,
-  onApprovePhase2,
+  onApprove,
   onReject,
   onToggleAppointments,
   onToggleDoctor,
@@ -69,24 +67,28 @@ export const DoctorManagement = ({
     }
 
     switch (status) {
-      case 'PHASE2_APPROVED':
+      case 'APPROVED':
         return (
           <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] text-[10px] font-bold uppercase tracking-wider">
             Active
           </span>
         );
-      case 'PHASE1_PENDING':
-      case 'PHASE2_PENDING':
+      case 'PENDING':
         return (
           <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#fffbeb] text-[#92400e] text-[10px] font-bold uppercase tracking-wider animate-pulse">
             Pending
           </span>
         );
       case 'REJECTED':
-      case 'PHASE2_REJECTED':
         return (
           <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#fef2f2] text-[#991b1b] text-[10px] font-bold uppercase tracking-wider">
             Rejected
+          </span>
+        );
+      case 'NEEDS_DETAILS':
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-650 text-[10px] font-bold uppercase tracking-wider">
+            Needs Details
           </span>
         );
       default:
@@ -183,9 +185,8 @@ export const DoctorManagement = ({
                     const status = getStatus(doc);
                     const profile = doc.doctorProfile;
                     const isExpanded = !!expandedRows[doc.id];
-                    const isP1Pending = status === 'PHASE1_PENDING';
-                    const isP2Pending = status === 'PHASE2_PENDING';
-                    const isApproved = status === 'PHASE2_APPROVED';
+                    const isPending = status === 'PENDING';
+                    const isApproved = status === 'APPROVED';
 
                     return (
                       <optgroup key={doc.id} className="[border-width:0]">
@@ -244,32 +245,11 @@ export const DoctorManagement = ({
                           {/* Actions */}
                           <TableCell className="py-4 px-4 text-right pr-6">
                             <div className="flex items-center justify-end gap-1.5 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                              {/* Phase 1 specific actions */}
-                              {isP1Pending && (
+                              {/* Verification specific actions */}
+                              {isPending && (
                                 <>
                                   <button
-                                    onClick={() => onApprovePhase1(doc.id)}
-                                    disabled={actionLoading !== null}
-                                    className="px-2.5 py-1 bg-white border border-[#e1e1e1] text-black rounded-sm text-[11px] font-bold hover:bg-[#f0f0f0] transition-opacity flex items-center gap-1 cursor-pointer"
-                                  >
-                                    <Check size={12} strokeWidth={3} />
-                                    Approve
-                                  </button>
-                                  <button
-                                    onClick={() => onReject(doc.id, doc.name, 1)}
-                                    disabled={actionLoading !== null}
-                                    className="px-2.5 py-1 bg-white border border-[#e1e1e1] text-black rounded-sm text-[11px] font-semibold hover:bg-[#f0f0f0] transition-all cursor-pointer"
-                                  >
-                                    Reject
-                                  </button>
-                                </>
-                              )}
-
-                              {/* Phase 2 specific actions */}
-                              {isP2Pending && (
-                                <>
-                                  <button
-                                    onClick={() => onApprovePhase2(doc.id)}
+                                    onClick={() => onApprove(doc.id)}
                                     disabled={actionLoading !== null}
                                     className="px-2.5 py-1 bg-white border border-[#e1e1e1] text-black rounded-sm text-[11px] font-bold hover:bg-[#f0f0f0] transition-opacity flex items-center gap-1 cursor-pointer"
                                   >
@@ -277,7 +257,7 @@ export const DoctorManagement = ({
                                     Verify
                                   </button>
                                   <button
-                                    onClick={() => onReject(doc.id, doc.name, 2)}
+                                    onClick={() => onReject(doc.id, doc.name)}
                                     disabled={actionLoading !== null}
                                     className="px-2.5 py-1 bg-white border border-[#e1e1e1] text-black rounded-sm text-[11px] font-semibold hover:bg-[#f0f0f0] transition-all cursor-pointer"
                                   >
@@ -286,38 +266,31 @@ export const DoctorManagement = ({
                                 </>
                               )}
 
-                              {/* Active Status Settings (Accept bookings toggle & Account ban toggle) */}
+                              {/* Active Status Settings (Accept bookings toggle) */}
                               {isApproved && (
-                                <>
-                                  {/* Toggle calendar bookings */}
-                                  <button
-                                    onClick={() => onToggleAppointments(doc.id, !!profile?.canTakeAppointments)}
-                                    disabled={actionLoading !== null}
-                                    className={`p-1.5 rounded-sm border transition-all cursor-pointer flex items-center justify-center ${
-                                      profile?.canTakeAppointments
-                                        ? 'border-[#e1e1e1] text-black bg-white hover:bg-[#f0f0f0]'
-                                        : 'border-[#e1e1e1] text-[#555555] bg-[#fafafa] hover:bg-[#f0f0f0]'
-                                    }`}
-                                    title={profile?.canTakeAppointments ? 'Disable Booking Slots' : 'Enable Booking Slots'}
-                                  >
-                                    {profile?.canTakeAppointments ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
-                                  </button>
-
-                                  {/* Ban button */}
-                                  <button
-                                    onClick={() => onToggleDoctor(doc.id, doc.isActive)}
-                                    disabled={actionLoading !== null}
-                                    className={`p-1.5 rounded-sm border transition-all cursor-pointer flex items-center justify-center ${
-                                      doc.isActive
-                                        ? 'border-[#e1e1e1] text-black bg-white hover:bg-[#f0f0f0]'
-                                        : 'border-[#e1e1e1] text-black bg-white hover:bg-[#f0f0f0]'
-                                    }`}
-                                    title={doc.isActive ? 'Ban Account' : 'Activate Account'}
-                                  >
-                                    {doc.isActive ? <Ban size={14} /> : <Play size={14} />}
-                                  </button>
-                                </>
+                                <button
+                                  onClick={() => onToggleAppointments(doc.id, !!profile?.canTakeAppointments)}
+                                  disabled={actionLoading !== null}
+                                  className={`p-1.5 rounded-sm border transition-all cursor-pointer flex items-center justify-center ${
+                                    profile?.canTakeAppointments
+                                      ? 'border-[#e1e1e1] text-black bg-white hover:bg-[#f0f0f0]'
+                                      : 'border-[#e1e1e1] text-[#555555] bg-[#fafafa] hover:bg-[#f0f0f0]'
+                                  }`}
+                                  title={profile?.canTakeAppointments ? 'Disable Booking Slots' : 'Enable Booking Slots'}
+                                >
+                                  {profile?.canTakeAppointments ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                                </button>
                               )}
+
+                              {/* Ban button (always available) */}
+                              <button
+                                onClick={() => onToggleDoctor(doc.id, doc.isActive)}
+                                disabled={actionLoading !== null}
+                                className={`p-1.5 rounded-sm border transition-all cursor-pointer flex items-center justify-center border-[#e1e1e1] text-black bg-white hover:bg-[#f0f0f0]`}
+                                title={doc.isActive ? 'Ban Account' : 'Activate Account'}
+                              >
+                                {doc.isActive ? <Ban size={14} /> : <Play size={14} />}
+                              </button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -354,20 +327,12 @@ export const DoctorManagement = ({
                               </div>
 
                               {/* Reject Reasons */}
-                              {(profile.rejectionReason || profile.phase2RejectionReason) && (
+                              {profile.rejectionReason && (
                                 <div className="mt-4 space-y-2">
-                                  {profile.rejectionReason && (
-                                    <div className="bg-rose-50/50 border border-rose-100 rounded p-3 flex gap-2.5 items-start text-xs">
-                                      <span className="text-rose-600 font-bold block shrink-0 mt-0.5">Phase 1 Rejection:</span>
-                                      <span className="text-rose-750 font-medium">{profile.rejectionReason}</span>
-                                    </div>
-                                  )}
-                                  {profile.phase2RejectionReason && (
-                                    <div className="bg-rose-50/50 border border-rose-100 rounded p-3 flex gap-2.5 items-start text-xs">
-                                      <span className="text-rose-600 font-bold block shrink-0 mt-0.5">Phase 2 Rejection:</span>
-                                      <span className="text-rose-750 font-medium">{profile.phase2RejectionReason}</span>
-                                    </div>
-                                  )}
+                                  <div className="bg-rose-50/50 border border-rose-100 rounded p-3 flex gap-2.5 items-start text-xs">
+                                    <span className="text-rose-600 font-bold block shrink-0 mt-0.5">Rejection Reason:</span>
+                                    <span className="text-rose-750 font-medium">{profile.rejectionReason}</span>
+                                  </div>
                                 </div>
                               )}
                             </TableCell>

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../services/api';
-import { ShieldCheck, CalendarRange, Clock, Edit3, DollarSign, ChevronLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ShieldCheck, CalendarRange, Clock, Edit3, DollarSign } from 'lucide-react';
 
 interface DoctorProfileData {
   specializations: string[];
@@ -102,12 +101,7 @@ const DoctorProfile = () => {
 
   return (
     <div className="max-w-4xl space-y-6">
-      <Link
-        to="/doctor-dashboard"
-        className="inline-flex items-center text-sm font-medium text-[#555555] hover:text-black transition-colors border border-[#e1e1e1] bg-white hover:bg-[#efefef] px-3 py-1.5 rounded-sm"
-      >
-        <ChevronLeft size={14} className="mr-1" /> Back to Workspace
-      </Link>
+
 
       {/* Page header */}
       <div className="mb-2">

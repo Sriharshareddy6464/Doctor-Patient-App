@@ -46,25 +46,14 @@ export const adminService = {
     return response.data;
   },
 
-  // ── Phase 1 Actions ──
-  async approvePhase1(doctorId: string) {
-    const response = await api.patch(`/admin/doctors/${doctorId}/approve-phase1`);
+  // ── Doctor Verification Actions ──
+  async approveDoctor(doctorId: string) {
+    const response = await api.patch(`/admin/doctors/${doctorId}/approve`);
     return response.data;
   },
 
-  async rejectPhase1(doctorId: string, reason: string) {
-    const response = await api.patch(`/admin/doctors/${doctorId}/reject-phase1`, { reason });
-    return response.data;
-  },
-
-  // ── Phase 2 Actions ──
-  async approvePhase2(doctorId: string) {
-    const response = await api.patch(`/admin/doctors/${doctorId}/approve-phase2`);
-    return response.data;
-  },
-
-  async rejectPhase2(doctorId: string, reason: string) {
-    const response = await api.patch(`/admin/doctors/${doctorId}/reject-phase2`, { reason });
+  async rejectDoctor(doctorId: string, reason: string) {
+    const response = await api.patch(`/admin/doctors/${doctorId}/reject`, { reason });
     return response.data;
   },
 

@@ -43,15 +43,12 @@ model DoctorProfile {
   availableFrom   String? // e.g. "09:00"
   availableTo     String? // e.g. "17:00"
 
-  // Phase 2 — professional verification
-  licenseNumber        String? // text license/registration number (Phase 2)
-  phase2RejectionReason String? // reason if Phase 2 was rejected
+  licenseNumber   String? // medical practice license number
+  rejectionReason String? // verification rejection reason
 
-  // Phase 3 — appointment booking gate (admin toggle)
-  canTakeAppointments Boolean @default(false)
+  canTakeAppointments Boolean @default(false) // admin toggle to accept appointments
 
-  approvalStatus  DoctorApprovalStatus @default(PHASE1_PENDING)
-  rejectionReason String? // Phase 1 rejection reason
+  approvalStatus  DoctorApprovalStatus @default(NEEDS_DETAILS)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -82,15 +79,10 @@ enum Role {
 }
 
 enum DoctorApprovalStatus {
-  // Phase 1 — basic registration review
-  PHASE1_PENDING  // just registered, awaiting admin Phase 1 approval
-  PHASE1_APPROVED // admin approved Phase 1 — doctor can now log in
-  REJECTED        // Phase 1 rejected — doctor cannot log in
-
-  // Phase 2 — professional details / license verification
-  PHASE2_PENDING  // doctor submitted full profile, awaiting admin Phase 2 approval
-  PHASE2_APPROVED // fully verified doctor
-  PHASE2_REJECTED // admin rejected Phase 2 details — doctor can re-submit
+  NEEDS_DETAILS
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum Gender {

@@ -45,7 +45,7 @@ export const AnalyticsDashboard = ({
   if (!analytics) {
     return (
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 w-full">
           <div className="flex items-center gap-3 px-1">
             <div className="p-2 bg-amber-50 rounded-xl border border-amber-100 text-amber-600">
               <BarChart3 size={20} />
@@ -56,23 +56,21 @@ export const AnalyticsDashboard = ({
                 Historical performance stats, trends, revenue figures, and practitioner leaderboards.
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex bg-[#fafafa] p-1 rounded-sm border border-[#e1e1e1]">
-                {periods.map((p) => (
-                  <button
-                    key={p.value}
-                    onClick={() => onPeriodChange(p.value)}
-                    className={`px-3 py-1.5 rounded-sm text-xs font-semibold transition-all ${
-                      period === p.value
-                        ? 'bg-black text-white shadow-sm border border-black'
-                        : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200/50'
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+          </div>
+          <div className="flex bg-[#fafafa] p-1 rounded-sm border border-[#e1e1e1] self-start sm:self-auto">
+            {periods.map((p) => (
+              <button
+                key={p.value}
+                onClick={() => onPeriodChange(p.value)}
+                className={`px-3 py-1.5 rounded-sm text-xs font-semibold transition-all ${
+                  period === p.value
+                    ? 'bg-black text-white shadow-sm border border-black'
+                    : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200/50'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
           </div>
         </div>
 

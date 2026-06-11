@@ -20,19 +20,19 @@ export const getStats = async () => {
       where: {
         role: "DOCTOR",
         isActive: true,
-        doctorProfile: { approvalStatus: DoctorApprovalStatus.PHASE2_APPROVED },
+        doctorProfile: { approvalStatus: DoctorApprovalStatus.APPROVED },
       },
     }),
     prisma.user.count({
       where: {
         role: "DOCTOR",
-        doctorProfile: { approvalStatus: DoctorApprovalStatus.PHASE1_PENDING },
+        doctorProfile: { approvalStatus: DoctorApprovalStatus.NEEDS_DETAILS },
       },
     }),
     prisma.user.count({
       where: {
         role: "DOCTOR",
-        doctorProfile: { approvalStatus: DoctorApprovalStatus.PHASE2_PENDING },
+        doctorProfile: { approvalStatus: DoctorApprovalStatus.PENDING },
       },
     }),
     prisma.user.count({ where: { role: "PATIENT" } }),
@@ -46,10 +46,10 @@ export const getStats = async () => {
   return {
     totalDoctors,
     activeDoctors,
-    // Total pending = Phase 1 + Phase 2
-    pendingApprovals: phase1Pending + phase2Pending,
-    phase1Pending,
-    phase2Pending,
+    // Total pending = only PENDING status (submitted details awaiting verification)
+    pendingApprovals: phase2Pending,
+    phase1Pending, // Maps needsDetails count
+    phase2Pending, // Maps pending count
     totalPatients,
     totalAppointments,
     confirmedAppointments,
@@ -98,7 +98,6 @@ export const getAllDoctors = async (params?: {
           select: {
             approvalStatus: true,
             rejectionReason: true,
-            phase2RejectionReason: true,
             specializations: true,
             experience: true,
             consultationFee: true,
@@ -127,66 +126,29 @@ export const getAllDoctors = async (params?: {
   };
 };
 
-// ─────────────── PHASE 1 ───────────────
+// ─────────────── DOCTOR VERIFICATION ───────────────
 
-/** Approve Phase 1 — doctor can now log in and submit full profile */
-export const approvePhase1 = async (doctorId: string) => {
+/** Approve doctor — doctor is fully verified and status is set to APPROVED */
+export const approveDoctor = async (doctorId: string) => {
   const user = await prisma.user.findUnique({ where: { id: doctorId, role: "DOCTOR" } });
   if (!user) throw { status: 404, message: "Doctor not found" };
 
   const profile = await prisma.doctorProfile.findUnique({ where: { userId: doctorId } });
   if (!profile) throw { status: 404, message: "Doctor profile not found" };
-  if (profile.approvalStatus !== DoctorApprovalStatus.PHASE1_PENDING) {
-    throw { status: 400, message: "Doctor is not in Phase 1 pending state" };
-  }
-
-  await prisma.$transaction([
-    prisma.doctorProfile.update({
-      where: { userId: doctorId },
-      data: { approvalStatus: DoctorApprovalStatus.PHASE1_APPROVED, rejectionReason: null },
-    }),
-    prisma.user.update({ where: { id: doctorId }, data: { isActive: true } }),
-  ]);
-
-  return { message: "Phase 1 approved. Doctor can now log in and submit professional details." };
-};
-
-/** Reject Phase 1 — doctor cannot log in */
-export const rejectPhase1 = async (doctorId: string, reason: string) => {
-  const user = await prisma.user.findUnique({ where: { id: doctorId, role: "DOCTOR" } });
-  if (!user) throw { status: 404, message: "Doctor not found" };
-
-  await prisma.doctorProfile.update({
-    where: { userId: doctorId },
-    data: { approvalStatus: DoctorApprovalStatus.REJECTED, rejectionReason: reason || null },
-  });
-
-  return { message: "Doctor Phase 1 application rejected." };
-};
-
-// ─────────────── PHASE 2 ───────────────
-
-/** Approve Phase 2 — doctor is fully verified */
-export const approvePhase2 = async (doctorId: string) => {
-  const user = await prisma.user.findUnique({ where: { id: doctorId, role: "DOCTOR" } });
-  if (!user) throw { status: 404, message: "Doctor not found" };
-
-  const profile = await prisma.doctorProfile.findUnique({ where: { userId: doctorId } });
-  if (!profile) throw { status: 404, message: "Doctor profile not found" };
-  if (profile.approvalStatus !== DoctorApprovalStatus.PHASE2_PENDING) {
-    throw { status: 400, message: "Doctor is not in Phase 2 pending state" };
+  if (profile.approvalStatus !== DoctorApprovalStatus.PENDING) {
+    throw { status: 400, message: "Doctor profile is not pending verification" };
   }
 
   await prisma.doctorProfile.update({
     where: { userId: doctorId },
-    data: { approvalStatus: DoctorApprovalStatus.PHASE2_APPROVED, phase2RejectionReason: null },
+    data: { approvalStatus: DoctorApprovalStatus.APPROVED, rejectionReason: null },
   });
 
-  return { message: "Phase 2 approved. Doctor is fully verified. Toggle appointments to allow bookings." };
+  return { message: "Doctor verified successfully. Toggle appointments to allow bookings." };
 };
 
-/** Reject Phase 2 — doctor can re-submit their professional details */
-export const rejectPhase2 = async (doctorId: string, reason: string) => {
+/** Reject doctor — doctor needs to resubmit details, status is set to REJECTED */
+export const rejectDoctor = async (doctorId: string, reason: string) => {
   const user = await prisma.user.findUnique({ where: { id: doctorId, role: "DOCTOR" } });
   if (!user) throw { status: 404, message: "Doctor not found" };
 
@@ -196,25 +158,25 @@ export const rejectPhase2 = async (doctorId: string, reason: string) => {
   await prisma.doctorProfile.update({
     where: { userId: doctorId },
     data: {
-      approvalStatus: DoctorApprovalStatus.PHASE2_REJECTED,
-      phase2RejectionReason: reason || null,
+      approvalStatus: DoctorApprovalStatus.REJECTED,
+      rejectionReason: reason || null,
     },
   });
 
-  return { message: "Doctor Phase 2 details rejected. They can re-submit their information." };
+  return { message: "Doctor verification rejected. They can re-submit their information." };
 };
 
-// ─────────────── PHASE 3 ───────────────
+// ─────────────── APPOINTMENTS TOGGLE ───────────────
 
-/** Toggle whether a doctor can accept appointment bookings (Phase 3 gate) */
+/** Toggle whether a doctor can accept appointment bookings */
 export const toggleAppointments = async (doctorId: string, canTake: boolean) => {
   const user = await prisma.user.findUnique({ where: { id: doctorId, role: "DOCTOR" } });
   if (!user) throw { status: 404, message: "Doctor not found" };
 
   const profile = await prisma.doctorProfile.findUnique({ where: { userId: doctorId } });
   if (!profile) throw { status: 404, message: "Doctor profile not found" };
-  if (profile.approvalStatus !== DoctorApprovalStatus.PHASE2_APPROVED) {
-    throw { status: 400, message: "Doctor must be Phase 2 approved before toggling appointments" };
+  if (profile.approvalStatus !== DoctorApprovalStatus.APPROVED) {
+    throw { status: 400, message: "Doctor must be approved before toggling appointments" };
   }
 
   // If disabling, block if there are active calls

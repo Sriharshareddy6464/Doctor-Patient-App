@@ -5,8 +5,6 @@ import {
   ShieldCheck,
   AlertTriangle,
   TrendingUp,
-  Server,
-  BellRing,
   ChevronDown
 } from 'lucide-react';
 import type { Stats, Tab } from '../types';
@@ -65,7 +63,7 @@ export const AdminOverview = ({ stats, onTabChange }: AdminOverviewProps) => {
 
         {/* Card 3 */}
         <div 
-          onClick={() => onTabChange(stats.phase1Pending > 0 ? 'phase1' : 'phase2')}
+          onClick={() => onTabChange('verification')}
           className="bg-white rounded-sm border border-[#e1e1e1] p-4 flex flex-col hover:bg-[#fafafa] transition-colors group cursor-pointer relative overflow-hidden"
         >
           <div className="flex justify-between items-start mb-2 relative z-10">
@@ -82,7 +80,7 @@ export const AdminOverview = ({ stats, onTabChange }: AdminOverviewProps) => {
               </span>
             )}
           </div>
-          <p className="text-[13px] text-[#777777] mt-1 relative z-10">Across Phase 1 & Phase 2</p>
+          <p className="text-[13px] text-[#777777] mt-1 relative z-10">Awaiting credentials review</p>
         </div>
 
         {/* Card 4 */}
@@ -116,7 +114,7 @@ export const AdminOverview = ({ stats, onTabChange }: AdminOverviewProps) => {
               Doctor Verification Queue
             </h3>
             <button 
-              onClick={() => onTabChange('phase1')}
+              onClick={() => onTabChange('verification')}
               className="text-[13px] text-[#555555] hover:text-black hover:underline"
             >
               View All Queue
@@ -181,7 +179,7 @@ export const AdminOverview = ({ stats, onTabChange }: AdminOverviewProps) => {
                   <td className="px-4 py-3 text-[#555555]">Pediatrics</td>
                   <td className="px-4 py-3 font-mono text-[#555555]">1d ago</td>
                   <td className="px-4 py-3">
-                    <span className="inline-flex items-center px-2 py-0.5 border border-[#e1e1e1] rounded-sm text-[11px] font-medium bg-[#f5f5f5] text-black">Pending Phase 1</span>
+                    <span className="inline-flex items-center px-2 py-0.5 border border-[#e1e1e1] rounded-sm text-[11px] font-medium bg-[#f5f5f5] text-black">Awaiting Details</span>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button className="text-[13px] px-3 py-1 border border-[#e1e1e1] rounded-sm hover:bg-[#f0f0f0] transition-colors text-black font-medium cursor-pointer">Review</button>
@@ -198,7 +196,7 @@ export const AdminOverview = ({ stats, onTabChange }: AdminOverviewProps) => {
                   <td className="px-4 py-3 text-[#555555]">Orthopedics</td>
                   <td className="px-4 py-3 font-mono text-[#555555]">1d ago</td>
                   <td className="px-4 py-3">
-                    <span className="inline-flex items-center px-2 py-0.5 border border-[#e1e1e1] rounded-sm text-[11px] font-medium bg-[#f5f5f5] text-black">Pending Phase 1</span>
+                    <span className="inline-flex items-center px-2 py-0.5 border border-[#e1e1e1] rounded-sm text-[11px] font-medium bg-[#f5f5f5] text-black">Awaiting Details</span>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button className="text-[13px] px-3 py-1 border border-[#e1e1e1] rounded-sm hover:bg-[#f0f0f0] transition-colors text-black font-medium cursor-pointer">Review</button>
@@ -209,7 +207,7 @@ export const AdminOverview = ({ stats, onTabChange }: AdminOverviewProps) => {
           </div>
           <div className="p-2 border-t border-[#e1e1e1] bg-white flex justify-center">
             <button 
-              onClick={() => onTabChange('phase1')}
+              onClick={() => onTabChange('verification')}
               className="text-[#555555] text-[13px] hover:text-black hover:underline flex items-center gap-1 font-medium"
             >
               Load More <ChevronDown size={14} />
@@ -217,67 +215,6 @@ export const AdminOverview = ({ stats, onTabChange }: AdminOverviewProps) => {
           </div>
         </div>
 
-        {/* Sidebar Alert/System Status (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          {/* System Status Card */}
-          <div className="bg-white rounded-sm border border-[#e1e1e1] p-4">
-            <h3 className="text-base text-black font-semibold mb-3 flex items-center gap-2 border-b border-[#e1e1e1] pb-2">
-              <Server size={18} className="text-black" />
-              System Status
-            </h3>
-            <div className="space-y-4 mt-4">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded bg-black"></div>
-                  <span className="text-[13px] text-black font-medium">API Gateway</span>
-                </div>
-                <span className="font-mono text-[#555555] text-xs">99.9% Uptime</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded bg-black"></div>
-                  <span className="text-[13px] text-black font-medium">Database (Primary)</span>
-                </div>
-                <span className="font-mono text-[#555555] text-xs">12ms Latency</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded border border-black bg-white"></div>
-                  <span className="text-[13px] text-black font-medium">Video Consult Server</span>
-                </div>
-                <span className="font-mono text-black text-xs font-semibold">High Load (85%)</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Alerts/Log */}
-          <div className="bg-white rounded-sm border border-[#e1e1e1] p-4 flex-1">
-            <h3 className="text-base text-black font-semibold mb-3 flex items-center gap-2 border-b border-[#e1e1e1] pb-2">
-              <BellRing size={18} className="text-black" />
-              Recent Alerts
-            </h3>
-            <div className="relative pl-4 mt-4 border-l border-[#e1e1e1] space-y-6">
-              {/* Alert Item */}
-              <div className="relative">
-                <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded bg-black ring-4 ring-white border border-white"></div>
-                <p className="text-[13px] text-black leading-snug">Failed payment sync reported by Clinic Gateway A.</p>
-                <span className="font-mono text-[10px] text-[#777777] mt-1 block">10:42 AM</span>
-              </div>
-              {/* Alert Item */}
-              <div className="relative">
-                <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded bg-white border border-black ring-4 ring-white"></div>
-                <p className="text-[13px] text-black leading-snug">New Phase 2 verification batch ready for manual review.</p>
-                <span className="font-mono text-[10px] text-[#777777] mt-1 block">09:15 AM</span>
-              </div>
-              {/* Alert Item */}
-              <div className="relative">
-                <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded bg-[#e1e1e1] ring-4 ring-white"></div>
-                <p className="text-[13px] text-[#555555] leading-snug">System backup completed successfully.</p>
-                <span className="font-mono text-[10px] text-[#777777] mt-1 block">02:00 AM</span>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { api } from '../../services/api';
 import { type TimeSlot } from '../../types/appointment';
-import { ChevronLeft, CalendarClock, Clock, CheckCircle } from 'lucide-react';
+import { CalendarClock, Clock, CheckCircle } from 'lucide-react';
 
 const inputCls = 'h-10 bg-white border border-[#e1e1e1] rounded-sm px-3 text-sm text-black focus:outline-none focus:border-black transition-colors';
 const labelCls = 'text-[11px] font-semibold text-[#555555] uppercase tracking-wider block mb-1.5';
@@ -10,6 +9,8 @@ const labelCls = 'text-[11px] font-semibold text-[#555555] uppercase tracking-wi
 const ManageSlots = () => {
   const today = new Date().toISOString().split('T')[0];
   const [date, setDate] = useState(today);
+  const [isRange, setIsRange] = useState(false);
+  const [endDate, setEndDate] = useState(today);
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('17:00');
   const [generatedSlots, setGeneratedSlots] = useState<TimeSlot[]>([]);
@@ -23,13 +24,20 @@ const ManageSlots = () => {
     setGeneratedSlots([]);
 
     try {
-      const res = await api.post('/doctor/time-slots', { date, startTime, endTime });
+      const payload: any = { date, startTime, endTime };
+      if (isRange) {
+        payload.endDate = endDate;
+      }
+      const res = await api.post('/doctor/time-slots', payload);
       if (res.data.success) {
         const slots: TimeSlot[] = Array.isArray(res.data.data) ? res.data.data : [];
         setGeneratedSlots(slots);
+        const msgText = isRange
+          ? `${slots.length} slots created across the date range (${date} to ${endDate}).`
+          : `${slots.length} slot${slots.length !== 1 ? 's' : ''} created for ${date}.`;
         setMessage({
           type: 'success',
-          text: `${slots.length} slot${slots.length !== 1 ? 's' : ''} created for ${date}.`,
+          text: msgText,
         });
       }
     } catch (err: any) {
@@ -44,12 +52,7 @@ const ManageSlots = () => {
 
   return (
     <div className="max-w-3xl space-y-6">
-      <Link
-        to="/doctor-dashboard"
-        className="inline-flex items-center text-sm font-medium text-[#555555] hover:text-black transition-colors border border-[#e1e1e1] bg-white hover:bg-[#efefef] px-3 py-1.5 rounded-sm"
-      >
-        <ChevronLeft size={14} className="mr-1" /> Back to Workspace
-      </Link>
+
 
       {/* Page header */}
       <div className="mb-2">
@@ -82,16 +85,55 @@ const ManageSlots = () => {
         </div>
         <div className="p-4">
           <form onSubmit={handleGenerate} className="space-y-5">
-            <div>
-              <label className={labelCls}>Date</label>
+            <div className="flex items-center gap-2 mb-4">
               <input
-                type="date"
-                min={today}
-                required
-                value={date}
-                onChange={e => setDate(e.target.value)}
-                className={`${inputCls} max-w-xs`}
+                type="checkbox"
+                id="isRange"
+                checked={isRange}
+                onChange={e => {
+                  setIsRange(e.target.checked);
+                  if (e.target.checked && endDate < date) {
+                    setEndDate(date);
+                  }
+                }}
+                className="h-4 w-4 border-[#e1e1e1] rounded-sm text-black focus:ring-black"
               />
+              <label htmlFor="isRange" className="text-xs font-semibold text-[#555555] uppercase tracking-wider cursor-pointer">
+                Generate for a Date Range
+              </label>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+              <div>
+                <label className={labelCls}>{isRange ? 'Start Date' : 'Date'}</label>
+                <input
+                  type="date"
+                  min={today}
+                  required
+                  value={date}
+                  onChange={e => {
+                    setDate(e.target.value);
+                    if (isRange && endDate < e.target.value) {
+                      setEndDate(e.target.value);
+                    }
+                  }}
+                  className={`${inputCls} max-w-xs`}
+                />
+              </div>
+
+              {isRange && (
+                <div>
+                  <label className={labelCls}>End Date</label>
+                  <input
+                    type="date"
+                    min={date}
+                    required
+                    value={endDate}
+                    onChange={e => setEndDate(e.target.value)}
+                    className={`${inputCls} max-w-xs`}
+                  />
+                </div>
+              )}
             </div>
 
             <div>
