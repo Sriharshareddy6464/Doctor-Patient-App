@@ -10,6 +10,7 @@ import {
   Modal,
   TextInput,
   Switch,
+  ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,16 +21,15 @@ import { Button } from '@/components/Button';
 import { LoadingScreen, EmptyState } from '@/components/LoadingScreen';
 import { Colors, Fonts, Spacing, Radii, Shadows } from '@/constants/theme';
 
-type RejectModalType = { id: string; phase: 1 | 2 } | null;
+type RejectModalType = { id: string; name: string } | null;
 
 function getPhaseLabel(status: DoctorApprovalStatus): { label: string; color: string; bgColor: string } {
   switch (status) {
-    case 'PHASE1_PENDING': return { label: 'Phase 1 — Pending', color: Colors.warning, bgColor: Colors.warningLight };
-    case 'PHASE1_APPROVED': return { label: 'Phase 1 APPROVED', color: Colors.primary, bgColor: Colors.primaryFaded };
+    case 'PENDING': return { label: 'Pending Verification', color: Colors.warning, bgColor: Colors.warningLight };
+    case 'APPROVED': return { label: 'Verified ✓', color: Colors.success, bgColor: Colors.successLight };
     case 'REJECTED': return { label: 'Rejected', color: Colors.danger, bgColor: Colors.dangerLight };
-    case 'PHASE2_PENDING': return { label: 'Phase 2 — Under Review', color: '#7c3aed', bgColor: '#EDE9FE' };
-    case 'PHASE2_APPROVED': return { label: 'Fully Verified ✓', color: Colors.success, bgColor: Colors.successLight };
-    case 'PHASE2_REJECTED': return { label: 'Phase 2 — Rejected', color: Colors.danger, bgColor: Colors.dangerLight };
+    case 'NEEDS_DETAILS': return { label: 'Needs Details', color: Colors.textSecondary, bgColor: '#F1F5F9' };
+    default: return { label: status, color: Colors.textSecondary, bgColor: '#F1F5F9' };
   }
 }
 
@@ -41,6 +41,10 @@ export default function AdminDoctorsScreen() {
   const [rejectModal, setRejectModal] = useState<RejectModalType>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Search & Filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<DoctorApprovalStatus | ''>('');
 
   const fetchDoctors = useCallback(async () => {
     try {
@@ -56,23 +60,11 @@ export default function AdminDoctorsScreen() {
 
   useEffect(() => { fetchDoctors(); }, [fetchDoctors]);
 
-  // ── Phase 1 ──
-  const handleApprovePhase1 = async (id: string) => {
+  const handleApprove = async (id: string) => {
     setActionLoading(id);
     try {
-      await adminService.approvePhase1(id);
-      Alert.alert('✓ Phase 1 Approved', 'Doctor can now log in and submit their professional details.');
-      fetchDoctors();
-    } catch (error: any) { Alert.alert('Error', error.message); }
-    finally { setActionLoading(null); }
-  };
-
-  // ── Phase 2 ──
-  const handleApprovePhase2 = async (id: string) => {
-    setActionLoading(id);
-    try {
-      await adminService.approvePhase2(id);
-      Alert.alert('✓ Phase 2 Approved', 'Doctor is fully verified. Enable appointments to let them start practising.');
+      await adminService.approveDoctor(id);
+      Alert.alert('✓ Doctor Verified', 'Doctor credentials verified and doctor is approved.');
       fetchDoctors();
     } catch (error: any) { Alert.alert('Error', error.message); }
     finally { setActionLoading(null); }
@@ -82,13 +74,8 @@ export default function AdminDoctorsScreen() {
     if (!rejectModal) return;
     setActionLoading(rejectModal.id);
     try {
-      if (rejectModal.phase === 1) {
-        await adminService.rejectPhase1(rejectModal.id, rejectReason);
-        Alert.alert('Done', 'Doctor Phase 1 application rejected.');
-      } else {
-        await adminService.rejectPhase2(rejectModal.id, rejectReason);
-        Alert.alert('Done', 'Doctor Phase 2 details rejected. They can re-submit.');
-      }
+      await adminService.rejectDoctor(rejectModal.id, rejectReason);
+      Alert.alert('Done', 'Doctor verification rejected.');
       setRejectModal(null);
       setRejectReason('');
       fetchDoctors();
@@ -96,7 +83,6 @@ export default function AdminDoctorsScreen() {
     finally { setActionLoading(null); }
   };
 
-  // ── Phase 3 ──
   const handleToggleAppointments = async (id: string, currentValue: boolean) => {
     const newValue = !currentValue;
     if (!newValue) {
@@ -126,7 +112,6 @@ export default function AdminDoctorsScreen() {
     finally { setActionLoading(null); }
   };
 
-  // ── Account ──
   const handleDeactivate = async (id: string) => {
     Alert.alert('Deactivate Account', 'This will block the doctor from logging in entirely.', [
       { text: 'Cancel', style: 'cancel' },
@@ -150,14 +135,35 @@ export default function AdminDoctorsScreen() {
     finally { setActionLoading(null); }
   };
 
+  // Locally filtered doctors
+  const filteredDoctors = doctors.filter((doc) => {
+    const matchesSearch =
+      doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doc.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (doc.doctorProfile?.specializations?.some(s => s.toLowerCase().includes(searchQuery.toLowerCase())) ?? false) ||
+      (doc.doctorProfile?.phone && doc.doctorProfile.phone.includes(searchQuery));
+
+    const docStatus = doc.doctorProfile?.approvalStatus || 'PENDING';
+    const matchesStatus = statusFilter === '' || docStatus === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
+
   if (loading) return <LoadingScreen />;
 
+  const statusOptions: { value: DoctorApprovalStatus | ''; label: string }[] = [
+    { value: '', label: 'All' },
+    { value: 'PENDING', label: 'Pending' },
+    { value: 'APPROVED', label: 'Verified' },
+    { value: 'REJECTED', label: 'Rejected' },
+    { value: 'NEEDS_DETAILS', label: 'Needs Details' },
+  ];
+
   const renderDoctor = ({ item }: { item: AdminDoctor }) => {
-    const status = (item.doctorProfile?.approvalStatus || 'PHASE1_PENDING') as DoctorApprovalStatus;
+    const status = (item.doctorProfile?.approvalStatus || 'PENDING') as DoctorApprovalStatus;
     const phaseInfo = getPhaseLabel(status);
-    const isPhase1Pending = status === 'PHASE1_PENDING';
-    const isPhase2Pending = status === 'PHASE2_PENDING';
-    const isPhase2Approved = status === 'PHASE2_APPROVED';
+    const isPending = status === 'PENDING';
+    const isApproved = status === 'APPROVED';
     const toggleLoading = actionLoading === item.id + '-toggle';
 
     return (
@@ -213,7 +219,7 @@ export default function AdminDoctorsScreen() {
               <Text style={styles.detailText}>{item._count?.doctorAppointments || 0} bookings</Text>
             </View>
 
-            {/* License number (Phase 2+) */}
+            {/* License number */}
             {item.doctorProfile.licenseNumber && (
               <View style={[styles.detailRow, styles.licenseRow]}>
                 <View style={styles.detailIconWrap}>
@@ -229,18 +235,12 @@ export default function AdminDoctorsScreen() {
         {status === 'REJECTED' && item.doctorProfile?.rejectionReason && (
           <View style={[styles.reasonBanner, Shadows.sm]}>
             <Ionicons name="warning" size={14} color={Colors.danger} />
-            <Text style={styles.reasonText}>Phase 1 rejected: {item.doctorProfile.rejectionReason}</Text>
-          </View>
-        )}
-        {status === 'PHASE2_REJECTED' && item.doctorProfile?.phase2RejectionReason && (
-          <View style={[styles.reasonBanner, Shadows.sm]}>
-            <Ionicons name="warning" size={14} color={Colors.danger} />
-            <Text style={styles.reasonText}>Phase 2 rejected: {item.doctorProfile.phase2RejectionReason}</Text>
+            <Text style={styles.reasonText}>Rejected reason: {item.doctorProfile.rejectionReason}</Text>
           </View>
         )}
 
-        {/* Phase 3: Appointment Toggle */}
-        {isPhase2Approved && (
+        {/* Practice Access / Appointment Toggle */}
+        {isApproved && (
           <View style={styles.toggleRow}>
             <View style={styles.toggleInfo}>
               <Ionicons
@@ -274,46 +274,25 @@ export default function AdminDoctorsScreen() {
 
         {/* Action buttons */}
         <View style={styles.actions}>
-          {/* Phase 1 actions */}
-          {isPhase1Pending && (
+          {isPending && (
             <>
               <Button
-                title="Approve Phase 1"
-                onPress={() => handleApprovePhase1(item.id)}
+                title="Verify Doctor"
+                onPress={() => handleApprove(item.id)}
                 variant="primary"
                 size="sm"
                 loading={actionLoading === item.id}
               />
               <Button
                 title="Reject"
-                onPress={() => setRejectModal({ id: item.id, phase: 1 })}
+                onPress={() => setRejectModal({ id: item.id, name: item.name })}
                 variant="danger"
                 size="sm"
               />
             </>
           )}
 
-          {/* Phase 2 actions */}
-          {isPhase2Pending && (
-            <>
-              <Button
-                title="Approve Phase 2"
-                onPress={() => handleApprovePhase2(item.id)}
-                variant="primary"
-                size="sm"
-                loading={actionLoading === item.id}
-              />
-              <Button
-                title="Reject Details"
-                onPress={() => setRejectModal({ id: item.id, phase: 2 })}
-                variant="danger"
-                size="sm"
-              />
-            </>
-          )}
-
-          {/* Account deactivate/activate (separate from appointment toggle) */}
-          {isPhase2Approved && item.isActive && (
+          {isApproved && item.isActive && (
             <Button
               title="Deactivate Account"
               onPress={() => handleDeactivate(item.id)}
@@ -340,11 +319,60 @@ export default function AdminDoctorsScreen() {
       {/* Frameless Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
         <Text style={styles.title}>Manage Doctors</Text>
-        <Text style={styles.subtitle}>{doctors.length} doctors registered</Text>
+        <Text style={styles.subtitle}>{filteredDoctors.length} doctors found</Text>
+      </View>
+
+      {/* Search Input */}
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={18} color={Colors.textTertiary} style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search doctors, specializations..."
+          placeholderTextColor={Colors.textTertiary}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
+            <Ionicons name="close-circle" size={16} color={Colors.textTertiary} />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Status Filter Chips */}
+      <View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterContainer}
+        >
+          {statusOptions.map((opt) => {
+            const isSelected = statusFilter === opt.value;
+            return (
+              <TouchableOpacity
+                key={opt.value}
+                style={[
+                  styles.filterChip,
+                  isSelected && styles.filterChipActive,
+                ]}
+                onPress={() => setStatusFilter(opt.value)}
+              >
+                <Text
+                  style={[
+                    styles.filterChipText,
+                    isSelected && styles.filterChipTextActive,
+                  ]}
+                >
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
 
       <FlatList
-        data={doctors}
+        data={filteredDoctors}
         keyExtractor={(item) => item.id}
         renderItem={renderDoctor}
         contentContainerStyle={styles.list}
@@ -358,7 +386,7 @@ export default function AdminDoctorsScreen() {
             tintColor={Colors.primary}
           />
         }
-        ListEmptyComponent={<EmptyState title="No Doctors" subtitle="No doctor registrations yet" />}
+        ListEmptyComponent={<EmptyState title="No Doctors" subtitle="No doctor registrations match your filters" />}
         showsVerticalScrollIndicator={false}
       />
 
@@ -366,13 +394,9 @@ export default function AdminDoctorsScreen() {
       <Modal visible={!!rejectModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, Shadows.xl]}>
-            <Text style={styles.modalTitle}>
-              {rejectModal?.phase === 1 ? 'Reject Phase 1 Application' : 'Reject Phase 2 Details'}
-            </Text>
+            <Text style={styles.modalTitle}>Reject Verification</Text>
             <Text style={styles.modalSubtitle}>
-              {rejectModal?.phase === 1
-                ? 'The doctor will not be able to log in.'
-                : 'The doctor can re-submit their professional details.'}
+              Provide a reason for rejecting Dr. {rejectModal?.name}'s application.
             </Text>
             <TextInput
               style={styles.modalInput}
@@ -412,6 +436,57 @@ const styles = StyleSheet.create({
     fontSize: Fonts.sizes.sm,
     color: Colors.textSecondary,
     marginTop: 2,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: Radii.sm,
+    marginHorizontal: Spacing.xl,
+    marginBottom: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    height: 44,
+  },
+  searchIcon: {
+    marginRight: Spacing.sm,
+  },
+  searchInput: {
+    flex: 1,
+    height: '100%',
+    color: Colors.text,
+    fontSize: Fonts.sizes.md,
+  },
+  clearButton: {
+    padding: Spacing.xs,
+  },
+  filterContainer: {
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.md,
+    gap: Spacing.sm,
+    flexDirection: 'row',
+  },
+  filterChip: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: 6,
+    borderRadius: Radii.full,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  filterChipActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  filterChipText: {
+    fontSize: Fonts.sizes.xs,
+    color: Colors.textSecondary,
+    fontWeight: '600',
+  },
+  filterChipTextActive: {
+    color: '#fff',
+    fontWeight: '700',
   },
   list: {
     paddingHorizontal: Spacing.xl,

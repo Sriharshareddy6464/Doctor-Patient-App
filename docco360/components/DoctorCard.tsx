@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/theme';
+import { Colors, Fonts, Spacing, Radii, Shadows } from '@/constants/theme';
 import { Avatar } from './Avatar';
 import type { DoctorListing } from '@/services/patient';
 
@@ -16,36 +16,36 @@ export function DoctorCard({ doctor, onPress }: DoctorCardProps) {
 
   return (
     <TouchableOpacity
-      className="bg-card rounded-2xl p-4 mb-3 shadow-md"
+      style={[styles.card, Shadows.sm]}
       onPress={onPress}
       activeOpacity={0.8}
     >
-      <View className="flex-row items-center">
+      <View style={styles.content}>
         <Avatar name={doctor.user.name} size={56} />
-        <View className="flex-1 ml-4 mr-2">
-          <Text className="text-base font-bold text-textMain">Dr. {doctor.user.name}</Text>
+        <View style={styles.info}>
+          <Text style={styles.name}>Dr. {doctor.user.name}</Text>
           {specializations.length > 0 && (
-            <Text className="text-sm text-primary mt-0.5 font-medium" numberOfLines={1}>
+            <Text style={styles.specialty} numberOfLines={1}>
               {specializations.join(' • ')}
             </Text>
           )}
-          <View className="flex-row flex-wrap gap-3 mt-2">
+          <View style={styles.metaRow}>
             {profile?.experience != null && (
-              <View className="flex-row items-center gap-1">
+              <View style={styles.metaItem}>
                 <Ionicons name="briefcase-outline" size={13} color={Colors.primary} />
-                <Text className="text-xs text-textSecondary font-medium">{profile.experience} yrs</Text>
+                <Text style={styles.metaText}>{profile.experience} yrs</Text>
               </View>
             )}
             {profile?.consultationFee != null && (
-              <View className="flex-row items-center gap-1">
+              <View style={styles.metaItem}>
                 <Ionicons name="cash-outline" size={13} color={Colors.success} />
-                <Text className="text-xs text-textSecondary font-medium">₹{profile.consultationFee}</Text>
+                <Text style={styles.metaText}>₹{profile.consultationFee}</Text>
               </View>
             )}
             {profile?.availableFrom && profile?.availableTo && (
-              <View className="flex-row items-center gap-1">
+              <View style={styles.metaItem}>
                 <Ionicons name="time-outline" size={13} color={Colors.accent} />
-                <Text className="text-xs text-textSecondary font-medium">
+                <Text style={styles.metaText}>
                   {profile.availableFrom}-{profile.availableTo}
                 </Text>
               </View>
@@ -57,3 +57,50 @@ export function DoctorCard({ doctor, onPress }: DoctorCardProps) {
     </TouchableOpacity>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: Colors.card,
+    borderRadius: Radii.sm,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: Spacing.lg,
+    marginBottom: Spacing.sm,
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  info: {
+    flex: 1,
+    marginLeft: Spacing.md,
+    marginRight: Spacing.xs,
+  },
+  name: {
+    fontSize: Fonts.sizes.md,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  specialty: {
+    fontSize: Fonts.sizes.xs,
+    color: Colors.primary,
+    marginTop: 2,
+    fontWeight: '600',
+  },
+  metaRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.md,
+    marginTop: Spacing.sm,
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  metaText: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    fontWeight: '600',
+  },
+});

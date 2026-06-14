@@ -5,45 +5,45 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#0058bc',
-        primaryDark: '#004494',
-        primaryDeep: '#001a41',
-        primaryLight: '#adc6ff',
-        primaryFaded: '#f0f3ff',
-        accent: '#ff9f43',
-        background: '#f9f9ff',
+        primary: '#f59e0b', // orange/amber-500
+        primaryDark: '#d97706', // amber-600
+        primaryDeep: '#78350f', // amber-900
+        primaryLight: '#fde68a', // amber-200
+        primaryFaded: '#fef3c7', // amber-100
+        accent: '#f59e0b',
+        background: '#fafafa', // zinc-50
         surface: '#ffffff',
-        surfaceAlt: '#f8fafc',
+        surfaceAlt: '#f4f4f5', // zinc-100
         card: '#ffffff',
-        navyDark: '#151c27',
-        textMain: '#151c27',
-        textSecondary: '#5c6571',
-        textTertiary: '#727784',
+        navyDark: '#18181b', // zinc-900
+        textMain: '#18181b', // zinc-900
+        textSecondary: '#4b5563', // gray-600
+        textTertiary: '#71717a', // zinc-500
         textInverse: '#ffffff',
-        textLink: '#0058bc',
-        border: '#c2c6d5',
-        borderLight: '#e2e8f8',
-        divider: '#c2c6d5',
-        success: '#10B981',
-        successLight: '#d1fae5',
-        warning: '#af6100',
-        warningLight: '#ffdcc2',
-        danger: '#ba1a1a',
-        dangerLight: '#ffdad6',
-        info: '#0058bc',
-        infoLight: '#d8e2ff',
-        overlay: 'rgba(21, 28, 39, 0.4)',
-        shadow: 'rgba(0, 88, 188, 0.05)',
-        statusConfirmed: '#0058bc',
-        statusCompleted: '#10B981',
-        statusCancelled: '#ba1a1a',
-        statusPending: '#af6100',
-        statusApproved: '#10B981',
-        statusRejected: '#ba1a1a',
-        statusInProgress: '#8b4c00',
-        statusScheduled: '#0058bc',
-        statusPaid: '#10B981',
-        statusRefunded: '#af6100',
+        textLink: '#d97706',
+        border: '#e4e4e7', // zinc-200
+        borderLight: '#f4f4f5', // zinc-100
+        divider: '#e4e4e7',
+        success: '#10b981', // emerald-500
+        successLight: '#d1fae5', // emerald-100
+        warning: '#f59e0b', // amber-500
+        warningLight: '#fef3c7', // amber-100
+        danger: '#ef4444', // red-500
+        dangerLight: '#fee2e2', // red-100
+        info: '#3b82f6', // blue-500
+        infoLight: '#dbeafe', // blue-100
+        overlay: 'rgba(24, 24, 27, 0.4)',
+        shadow: 'rgba(245, 158, 11, 0.05)',
+        statusConfirmed: '#3b82f6',
+        statusCompleted: '#71717a',
+        statusCancelled: '#ef4444',
+        statusPending: '#f59e0b',
+        statusApproved: '#10b981',
+        statusRejected: '#ef4444',
+        statusInProgress: '#8b5cf6', // purple-500
+        statusScheduled: '#3b82f6',
+        statusPaid: '#10b981',
+        statusRefunded: '#f59e0b',
       }
     },
   },

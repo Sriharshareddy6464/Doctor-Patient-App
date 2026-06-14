@@ -7,7 +7,6 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,7 +14,7 @@ import { adminService, AdminStats } from '@/services/admin';
 import { StatCard } from '@/components/StatCard';
 import { Avatar } from '@/components/Avatar';
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { Colors, Fonts, Spacing, Radii, Gradients, Shadows } from '@/constants/theme';
+import { Colors, Fonts, Spacing, Radii, Shadows } from '@/constants/theme';
 
 export default function AdminDashboardScreen() {
   const { user } = useAuth();
@@ -77,22 +76,15 @@ export default function AdminDashboardScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* Revenue Card (Full width gradient) */}
-        <View style={[styles.revenueCard, Shadows.lg]}>
-          <LinearGradient
-            colors={Gradients.primary}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.revenueGradient}
-          >
-            <View style={styles.revenueInfo}>
-              <Text style={styles.revenueTitle}>Total Revenue</Text>
-              <Text style={styles.revenueValue}>₹{(stats?.totalRevenue || 0).toLocaleString()}</Text>
-            </View>
-            <View style={styles.revenueIconWrap}>
-              <Ionicons name="wallet" size={32} color="#fff" />
-            </View>
-          </LinearGradient>
+        {/* Revenue Card (Flat bordered style) */}
+        <View style={styles.revenueCard}>
+          <View style={styles.revenueInfo}>
+            <Text style={styles.revenueTitle}>Total Revenue</Text>
+            <Text style={styles.revenueValue}>₹{(stats?.totalRevenue || 0).toLocaleString()}</Text>
+          </View>
+          <View style={styles.revenueIconWrap}>
+            <Ionicons name="wallet" size={24} color={Colors.primary} />
+          </View>
         </View>
 
         {/* Doctors Stats Section */}
@@ -228,37 +220,37 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.sm,
   },
   revenueCard: {
-    borderRadius: Radii.lg,
-    overflow: 'hidden',
-    marginBottom: Spacing.lg,
-  },
-  revenueGradient: {
+    backgroundColor: Colors.surface,
+    borderRadius: Radii.sm,
+    borderWidth: 1,
+    borderColor: Colors.border,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   revenueInfo: {
     flex: 1,
   },
   revenueTitle: {
-    fontSize: Fonts.sizes.sm,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.85)',
+    fontSize: Fonts.sizes.xs,
+    fontWeight: '700',
+    color: Colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   revenueValue: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#fff',
+    color: Colors.text,
     marginTop: Spacing.xs,
   },
   revenueIconWrap: {
-    width: 60,
-    height: 60,
-    borderRadius: Radii.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 46,
+    height: 46,
+    borderRadius: Radii.xs,
+    backgroundColor: Colors.primaryFaded,
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -7,6 +7,7 @@ import {
   RefreshControl,
   Alert,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -114,45 +115,81 @@ export default function DoctorDashboardScreen() {
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <View style={styles.listHeader}>
-            {/* Today's Schedule Banner */}
-            <View style={[styles.bannerCard, Shadows.lg]}>
-              <LinearGradient
-                colors={Gradients.primary}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.bannerGradient}
+            {/* Status strip */}
+            <View style={styles.statusStrip}>
+              <Ionicons name="pulse" size={14} color="#000" />
+              <Text style={styles.statusStripText}>Available</Text>
+              <View style={styles.statusStripDot} />
+            </View>
+
+            {/* Quick-action cards */}
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false} 
+              contentContainerStyle={styles.cardsScroll}
+            >
+              {/* Card 1: Incoming Queue */}
+              <View style={styles.quickCard}>
+                <View style={styles.quickCardHeader}>
+                  <Text style={styles.quickCardLabel}>INCOMING QUEUE</Text>
+                  <Ionicons name="people" size={18} color="#000" />
+                </View>
+                <Text style={styles.quickCardDesc}>
+                  Patients scheduled for consultations. Launch secure video calls instantly.
+                </Text>
+                {todayAppointments.length > 0 && (
+                  <View style={styles.quickCardBadge}>
+                    <Text style={styles.quickCardBadgeText}>
+                      {todayAppointments.length} patient{todayAppointments.length !== 1 ? 's' : ''} queued
+                    </Text>
+                  </View>
+                )}
+                <View style={styles.quickCardButton}>
+                  <Text style={styles.quickCardButtonText}>View Queue</Text>
+                  <Ionicons name="arrow-forward" size={14} color="#000" />
+                </View>
+              </View>
+
+              {/* Card 2: Schedule Availability */}
+              <TouchableOpacity 
+                style={styles.quickCard}
+                onPress={() => router.push('/(doctor)/(tabs)/schedule')}
+                activeOpacity={0.8}
               >
-                <View style={styles.bannerInfo}>
-                  <Text style={styles.bannerTitle}>Today's Schedule</Text>
-                  <Text style={styles.bannerSubtitle}>
-                    {todayAppointments.length > 0
-                      ? `You have ${todayAppointments.length} appointment(s) scheduled for today.`
-                      : 'No appointments scheduled for today.'}
-                  </Text>
+                <View style={styles.quickCardHeader}>
+                  <Text style={styles.quickCardLabel}>SCHEDULE AVAILABILITY</Text>
+                  <Ionicons name="calendar" size={18} color="#000" />
                 </View>
-                <View style={styles.bannerIconWrap}>
-                  <Ionicons name="today" size={28} color="#fff" />
+                <Text style={styles.quickCardDesc}>
+                  Configure your working hours and generate 30-minute slots for patients to book.
+                </Text>
+                <View style={styles.quickCardButton}>
+                  <Text style={styles.quickCardButtonText}>Manage Slots</Text>
+                  <Ionicons name="arrow-forward" size={14} color="#000" />
                 </View>
-              </LinearGradient>
-            </View>
+              </TouchableOpacity>
 
-            {/* Stats Bento Grid */}
-            <View style={styles.statsRow}>
-              <StatCard
-                title="Upcoming Appointments"
-                value={upcomingCount}
-                icon="calendar"
-                gradient={Gradients.primary}
-              />
-              <StatCard
-                title="Completed Calls"
-                value={completedCount}
-                icon="checkmark-circle"
-                color={Colors.success}
-              />
-            </View>
+              {/* Card 3: Clinic Profile */}
+              <TouchableOpacity 
+                style={styles.quickCard}
+                onPress={() => router.push('/(doctor)/(tabs)/profile')}
+                activeOpacity={0.8}
+              >
+                <View style={styles.quickCardHeader}>
+                  <Text style={styles.quickCardLabel}>CLINIC PROFILE</Text>
+                  <Ionicons name="settings" size={18} color="#000" />
+                </View>
+                <Text style={styles.quickCardDesc}>
+                  Update your public credentials, specialties, and professional bio.
+                </Text>
+                <View style={styles.quickCardButton}>
+                  <Text style={styles.quickCardButtonText}>Edit Information</Text>
+                  <Ionicons name="arrow-forward" size={14} color="#000" />
+                </View>
+              </TouchableOpacity>
+            </ScrollView>
 
-            <Text style={styles.sectionTitle}>Upcoming Appointments</Text>
+            <Text style={styles.sectionTitle}>Upcoming Queue</Text>
           </View>
         }
         renderItem={({ item }) => (
@@ -246,51 +283,101 @@ const styles = StyleSheet.create({
   listHeader: {
     paddingTop: Spacing.sm,
   },
-  bannerCard: {
-    borderRadius: Radii.lg,
-    overflow: 'hidden',
+  statusStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e1e1e1',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+    marginTop: Spacing.xs,
     marginBottom: Spacing.lg,
   },
-  bannerGradient: {
+  statusStripText: {
+    fontSize: Fonts.sizes.sm,
+    fontWeight: '600',
+    color: '#555555',
+  },
+  statusStripDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#000000',
+    marginLeft: 4,
+  },
+  cardsScroll: {
+    gap: Spacing.md,
+    paddingBottom: Spacing.md,
+  },
+  quickCard: {
+    width: 260,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e1e1e1',
+    borderRadius: 4,
+    padding: Spacing.lg,
+    justifyContent: 'flex-start',
+  },
+  quickCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: Spacing.xl,
+    marginBottom: Spacing.sm,
   },
-  bannerInfo: {
-    flex: 1,
-    marginRight: Spacing.md,
-  },
-  bannerTitle: {
-    fontSize: Fonts.sizes.lg,
+  quickCardLabel: {
+    fontSize: 10,
     fontWeight: '700',
-    color: '#fff',
+    color: '#555555',
+    letterSpacing: 1,
   },
-  bannerSubtitle: {
-    fontSize: Fonts.sizes.sm,
-    color: 'rgba(255,255,255,0.85)',
-    marginTop: 4,
-    lineHeight: Fonts.lineHeights.sm,
+  quickCardDesc: {
+    fontSize: 12,
+    color: '#777777',
+    lineHeight: 18,
+    marginBottom: Spacing.md,
   },
-  bannerIconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: Radii.md,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  quickCardBadge: {
+    borderWidth: 1,
+    borderColor: '#e1e1e1',
+    borderRadius: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    backgroundColor: '#f5f5f5',
+    alignSelf: 'flex-start',
+    marginBottom: Spacing.md,
   },
-  statsRow: {
+  quickCardBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#000000',
+  },
+  quickCardButton: {
     flexDirection: 'row',
-    gap: Spacing.md,
-    marginBottom: Spacing.lg,
+    alignItems: 'center',
+    gap: Spacing.sm,
+    borderWidth: 1,
+    borderColor: '#e1e1e1',
+    borderRadius: 4,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    alignSelf: 'flex-start',
+    marginTop: 'auto',
+  },
+  quickCardButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#000000',
   },
   sectionTitle: {
     fontSize: Fonts.sizes.lg,
     fontWeight: '700',
     color: Colors.text,
     marginBottom: Spacing.md,
-    marginTop: Spacing.xs,
+    marginTop: Spacing.lg,
   },
 });
 

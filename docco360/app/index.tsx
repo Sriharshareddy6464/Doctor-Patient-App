@@ -19,33 +19,20 @@ export default function Index() {
       case 'DOCTOR': {
         const status = user.doctorProfile?.approvalStatus;
 
-        // Phase 1: still awaiting basic approval — shouldn't normally happen
-        // (login is blocked at this stage) but handle defensively
-        if (!status || status === 'PHASE1_PENDING' || status === 'REJECTED') {
-          router.replace('/(auth)/pending-approval');
-          return;
-        }
-
-        // Phase 1 approved — doctor needs to submit professional details
-        if (status === 'PHASE1_APPROVED') {
+        // NEEDS_DETAILS / REJECTED / !status -> submit-details
+        if (!status || status === 'NEEDS_DETAILS' || status === 'REJECTED') {
           router.replace('/(doctor)/submit-details' as any);
           return;
         }
 
-        // Phase 2: submitted, waiting for admin verification
-        if (status === 'PHASE2_PENDING') {
+        // PENDING -> verification-pending
+        if (status === 'PENDING') {
           router.replace('/(doctor)/verification-pending' as any);
           return;
         }
 
-        // Phase 2 rejected — doctor needs to re-submit
-        if (status === 'PHASE2_REJECTED') {
-          router.replace('/(doctor)/submit-details' as any);
-          return;
-        }
-
-        // Phase 2 approved — check Phase 3 appointment toggle
-        if (status === 'PHASE2_APPROVED') {
+        // APPROVED -> check appointment toggle
+        if (status === 'APPROVED') {
           if (!user.doctorProfile?.canTakeAppointments) {
             router.replace('/(doctor)/contact-admin' as any);
             return;

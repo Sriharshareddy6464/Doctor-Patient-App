@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,8 @@ import { Colors, Fonts, Spacing, Radii, Shadows } from '@/constants/theme';
 
 export default function VerificationPendingScreen() {
   const insets = useSafeAreaInsets();
-  const { logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
+  const [checking, setChecking] = useState(false);
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const floatAnim = useRef(new Animated.Value(0)).current;
@@ -25,6 +26,31 @@ export default function VerificationPendingScreen() {
   const dot1 = useRef(new Animated.Value(0.3)).current;
   const dot2 = useRef(new Animated.Value(0.3)).current;
   const dot3 = useRef(new Animated.Value(0.3)).current;
+
+  useEffect(() => {
+    if (!user) return;
+    const status = user.doctorProfile?.approvalStatus;
+    if (status === 'APPROVED') {
+      if (!user.doctorProfile?.canTakeAppointments) {
+        router.replace('/(doctor)/contact-admin' as any);
+      } else {
+        router.replace('/(doctor)/(tabs)/dashboard');
+      }
+    } else if (status === 'NEEDS_DETAILS' || status === 'REJECTED') {
+      router.replace('/(doctor)/submit-details' as any);
+    }
+  }, [user]);
+
+  const handleRefreshStatus = async () => {
+    setChecking(true);
+    try {
+      await refreshUser();
+    } catch (err: any) {
+      Alert.alert('Error', err.message || 'Failed to refresh status');
+    } finally {
+      setTimeout(() => setChecking(false), 800);
+    }
+  };
 
   useEffect(() => {
     Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }).start();
@@ -162,10 +188,22 @@ export default function VerificationPendingScreen() {
           </Text>
         </View>
 
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} activeOpacity={0.8}>
-          <Ionicons name="log-out-outline" size={18} color={Colors.danger} />
-          <Text style={styles.logoutButtonText}>Logout</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonRow}>
+          <TouchableOpacity 
+            style={styles.checkButton} 
+            onPress={handleRefreshStatus} 
+            disabled={checking}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="refresh" size={18} color={Colors.primary} />
+            <Text style={styles.checkButtonText}>{checking ? 'Checking...' : 'Check Status'}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} activeOpacity={0.8}>
+            <Ionicons name="log-out" size={18} color={Colors.danger} />
+            <Text style={styles.logoutButtonText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
       </Animated.View>
     </View>
   );
@@ -288,6 +326,31 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     lineHeight: Fonts.lineHeights.sm,
   },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    width: '100%',
+    justifyContent: 'center',
+    marginTop: Spacing.md,
+  },
+  checkButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: Radii.full,
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+    backgroundColor: 'transparent',
+    flex: 1,
+    justifyContent: 'center',
+  },
+  checkButtonText: {
+    fontSize: Fonts.sizes.md,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -298,6 +361,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: Colors.danger,
     backgroundColor: 'transparent',
+    flex: 1,
+    justifyContent: 'center',
   },
   logoutButtonText: {
     fontSize: Fonts.sizes.md,

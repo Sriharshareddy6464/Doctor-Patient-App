@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   infoCard: {
     flex: 1,
     backgroundColor: Colors.surface,
-    borderRadius: Radii.lg,
+    borderRadius: Radii.sm,
     padding: Spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   },
   menuCard: {
     backgroundColor: Colors.surface,
-    borderRadius: Radii.lg,
+    borderRadius: Radii.sm,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(194, 198, 213, 0.3)',

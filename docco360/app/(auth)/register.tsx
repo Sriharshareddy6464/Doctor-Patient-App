@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -13,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
-import { Colors } from '@/constants/theme';
+import { Colors, Fonts, Spacing, Radii, Shadows } from '@/constants/theme';
 import { ApiError } from '@/services/api';
 
 type Role = 'PATIENT' | 'DOCTOR';
@@ -103,57 +104,57 @@ export default function RegisterScreen() {
   const strength = getPasswordStrength();
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView style={styles.container}>
       {/* Mobile Top Header */}
-      <View className="flex-row justify-center items-center py-4 border-b border-transparent bg-background">
-        <View className="flex-row items-center gap-2">
-          <Text className="text-2xl font-bold text-primary">Docco360</Text>
+      <View style={styles.logoHeader}>
+        <View style={styles.logoRow}>
+          <Text style={styles.logoText}>Docco360</Text>
         </View>
       </View>
 
       <KeyboardAvoidingView
-        className="flex-1"
+        style={styles.keyboardAvoid}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
-          contentContainerClassName="grow justify-center p-6"
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View className="w-full max-w-[480px] self-center">
+          <View style={styles.formWrapper}>
             {/* Header & Branding */}
-            <View className="items-center mb-8">
-              <Text className="text-2xl font-bold text-textMain mb-1">Create an account</Text>
-              <Text className="text-base text-textSecondary font-normal text-center">Please complete your profile to continue</Text>
+            <View style={styles.header}>
+              <Text style={styles.title}>Create an account</Text>
+              <Text style={styles.subtitle}>Please complete your profile to continue</Text>
             </View>
 
             {/* Role Selection Tabs */}
-            <View className="flex-row bg-borderLight rounded-md p-1 mb-8">
+            <View style={styles.tabsContainer}>
               <TouchableOpacity
-                className={`flex-1 py-4 rounded items-center ${role === 'PATIENT' ? 'bg-surface shadow-sm' : ''}`}
+                style={[styles.tabButton, role === 'PATIENT' ? styles.tabButtonActive : null]}
                 onPress={() => setRole('PATIENT')}
               >
-                <Text className={`text-sm font-semibold ${role === 'PATIENT' ? 'text-primary' : 'text-textSecondary'}`}>Patient</Text>
+                <Text style={[styles.tabButtonText, role === 'PATIENT' ? styles.tabButtonTextActive : styles.tabButtonTextInactive]}>Patient</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className={`flex-1 py-4 rounded items-center ${role === 'DOCTOR' ? 'bg-surface shadow-sm' : ''}`}
+                style={[styles.tabButton, role === 'DOCTOR' ? styles.tabButtonActive : null]}
                 onPress={() => setRole('DOCTOR')}
               >
-                <Text className={`text-sm font-semibold ${role === 'DOCTOR' ? 'text-primary' : 'text-textSecondary'}`}>Doctor</Text>
+                <Text style={[styles.tabButtonText, role === 'DOCTOR' ? styles.tabButtonTextActive : styles.tabButtonTextInactive]}>Doctor</Text>
               </TouchableOpacity>
             </View>
 
             {/* Form */}
-            <View className="mb-6">
+            <View style={styles.form}>
               {errors.general && (
-                <View className="flex-row items-center bg-dangerLight rounded-md p-4 mb-6 gap-2">
+                <View style={styles.errorBanner}>
                   <Ionicons name="alert-circle" size={18} color={Colors.danger} />
-                  <Text className="text-sm text-danger flex-1 font-medium">{errors.general}</Text>
+                  <Text style={styles.errorText}>{errors.general}</Text>
                 </View>
               )}
 
-              <View className="flex-row gap-4">
-                <View className="flex-1">
+              <View style={styles.row}>
+                <View style={styles.col}>
                   <Input
                     label="First Name"
                     placeholder="Jane"
@@ -163,7 +164,7 @@ export default function RegisterScreen() {
                     error={errors.firstName}
                   />
                 </View>
-                <View className="flex-1">
+                <View style={styles.col}>
                   <Input
                     label="Last Name"
                     placeholder="Doe"
@@ -197,7 +198,7 @@ export default function RegisterScreen() {
                 error={errors.email}
               />
 
-              <View className="mb-1">
+              <View style={styles.passwordWrapper}>
                 <Input
                   label="Password"
                   placeholder="••••••••"
@@ -211,20 +212,22 @@ export default function RegisterScreen() {
                 />
                 {/* Strength Meter */}
                 {password.length > 0 && (
-                  <View className="mt-1 px-1">
-                    <View className="flex-row gap-1 h-1.5 mb-1">
+                  <View style={styles.strengthWrapper}>
+                    <View style={styles.strengthBarRow}>
                       {[1, 2, 3, 4].map((i) => (
                         <View
                           key={i}
-                          className="flex-1 rounded-full"
-                          style={{
-                            backgroundColor:
-                              i <= strength.level ? strength.color : Colors.borderLight,
-                          }}
+                          style={[
+                            styles.strengthBarSegment,
+                            {
+                              backgroundColor:
+                                i <= strength.level ? strength.color : Colors.borderLight,
+                            }
+                          ]}
                         />
                       ))}
                     </View>
-                    <Text className="text-[10px] font-semibold text-right text-textTertiary">
+                    <Text style={styles.strengthText}>
                       {strength.label}
                     </Text>
                   </View>
@@ -244,15 +247,19 @@ export default function RegisterScreen() {
               )}
 
               <TouchableOpacity 
-                className="flex-row items-start gap-2 mt-4 mb-6 px-1"
+                style={styles.termsRow}
                 activeOpacity={0.7}
                 onPress={() => setAgreed(!agreed)}
               >
-                <View className={`w-[18px] h-[18px] rounded border-[1.5px] justify-center items-center mt-0.5 ${agreed ? 'bg-primary border-primary' : 'bg-surfaceAlt border-border'} ${errors.agreed ? 'border-danger' : ''}`}>
+                <View style={[
+                  styles.checkbox,
+                  agreed ? styles.checkboxChecked : styles.checkboxUnchecked,
+                  errors.agreed ? styles.checkboxError : null,
+                ]}>
                   {agreed && <Ionicons name="checkmark" size={12} color="#fff" />}
                 </View>
-                <Text className="flex-1 text-sm text-textSecondary leading-5">
-                  I agree to the <Text className="text-primary font-medium">Terms of Service</Text> and <Text className="text-primary font-medium">Privacy Policy</Text>.
+                <Text style={styles.termsText}>
+                  I agree to the <Text style={styles.termsLink}>Terms of Service</Text> and <Text style={styles.termsLink}>Privacy Policy</Text>.
                 </Text>
               </TouchableOpacity>
 
@@ -262,36 +269,36 @@ export default function RegisterScreen() {
                 loading={loading}
                 fullWidth
                 size="lg"
-                className="mt-1"
+                style={{ marginTop: 4 }}
               />
             </View>
 
             {/* Divider */}
-            <View className="flex-row items-center py-6">
-              <View className="flex-1 h-[1px] bg-borderLight" />
-              <Text className="mx-4 text-xs text-textTertiary">Or register with</Text>
-              <View className="flex-1 h-[1px] bg-borderLight" />
+            <View style={styles.dividerRow}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>Or register with</Text>
+              <View style={styles.dividerLine} />
             </View>
 
             {/* Social Logins */}
-            <View className="flex-row gap-4 mb-8">
-              <TouchableOpacity className="flex-1 flex-row items-center justify-center gap-2 bg-surface py-4 rounded-lg border border-borderLight" activeOpacity={0.7}>
+            <View style={styles.socialRow}>
+              <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
                 <Ionicons name="logo-google" size={20} color="#EA4335" />
-                <Text className="text-sm font-medium text-textMain">Google</Text>
+                <Text style={styles.socialText}>Google</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="flex-1 flex-row items-center justify-center gap-2 bg-surface py-4 rounded-lg border border-borderLight" activeOpacity={0.7}>
+              <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
                 <Ionicons name="logo-apple" size={20} color="#000" />
-                <Text className="text-sm font-medium text-textMain">Apple</Text>
+                <Text style={styles.socialText}>Apple</Text>
               </TouchableOpacity>
             </View>
 
             {/* Login Link */}
-            <View className="flex-row justify-center items-center mb-8">
-              <Text className="text-base text-textSecondary">
+            <View style={styles.loginRow}>
+              <Text style={styles.loginText}>
                 Already have an account?{' '}
               </Text>
               <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
-                <Text className="text-base text-primary font-semibold underline">Sign in</Text>
+                <Text style={styles.loginLink}>Sign in</Text>
               </TouchableOpacity>
             </View>
 
@@ -301,3 +308,226 @@ export default function RegisterScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  logoHeader: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: 'transparent',
+    backgroundColor: Colors.background,
+  },
+  logoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  logoText: {
+    fontSize: Fonts.sizes.xxl,
+    fontWeight: '800',
+    color: Colors.primary,
+  },
+  keyboardAvoid: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: Spacing.xl,
+  },
+  formWrapper: {
+    width: '100%',
+    maxWidth: 480,
+    alignSelf: 'center',
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: Spacing.xxl,
+  },
+  title: {
+    fontSize: Fonts.sizes.xxl,
+    fontWeight: '800',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: Fonts.sizes.md,
+    color: Colors.textSecondary,
+    fontWeight: '400',
+    textAlign: 'center',
+    lineHeight: Fonts.lineHeights.md,
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    backgroundColor: Colors.borderLight,
+    borderRadius: Radii.sm,
+    padding: 4,
+    marginBottom: Spacing.xxl,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: Spacing.lg,
+    borderRadius: Radii.sm,
+    alignItems: 'center',
+  },
+  tabButtonActive: {
+    backgroundColor: Colors.surface,
+    ...Shadows.sm,
+  },
+  tabButtonText: {
+    fontSize: Fonts.sizes.sm,
+    fontWeight: '600',
+  },
+  tabButtonTextActive: {
+    color: Colors.primary,
+  },
+  tabButtonTextInactive: {
+    color: Colors.textSecondary,
+  },
+  form: {
+    marginBottom: Spacing.xl,
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.dangerLight,
+    borderRadius: Radii.sm,
+    padding: Spacing.lg,
+    marginBottom: Spacing.xl,
+    gap: Spacing.sm,
+  },
+  errorText: {
+    fontSize: Fonts.sizes.xs,
+    color: Colors.danger,
+    flex: 1,
+    fontWeight: '500',
+  },
+  row: {
+    flexDirection: 'row',
+    gap: Spacing.lg,
+  },
+  col: {
+    flex: 1,
+  },
+  passwordWrapper: {
+    marginBottom: Spacing.xs,
+  },
+  strengthWrapper: {
+    marginTop: Spacing.xs,
+    paddingHorizontal: 4,
+  },
+  strengthBarRow: {
+    flexDirection: 'row',
+    gap: Spacing.xs,
+    height: 6,
+    marginBottom: 4,
+  },
+  strengthBarSegment: {
+    flex: 1,
+    borderRadius: Radii.full,
+  },
+  strengthText: {
+    fontSize: 10,
+    fontWeight: '600',
+    textAlign: 'right',
+    color: Colors.textTertiary,
+  },
+  termsRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.xl,
+    paddingHorizontal: 4,
+  },
+  checkbox: {
+    width: 18,
+    height: 18,
+    borderRadius: Radii.xs,
+    borderWidth: 1.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  checkboxChecked: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  checkboxUnchecked: {
+    backgroundColor: Colors.surfaceAlt,
+    borderColor: Colors.border,
+  },
+  checkboxError: {
+    borderColor: Colors.danger,
+  },
+  termsText: {
+    flex: 1,
+    fontSize: Fonts.sizes.sm,
+    color: Colors.textSecondary,
+    lineHeight: Fonts.lineHeights.md,
+  },
+  termsLink: {
+    color: Colors.primary,
+    fontWeight: '500',
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.xl,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.borderLight,
+  },
+  dividerText: {
+    marginHorizontal: Spacing.lg,
+    fontSize: Fonts.sizes.xs,
+    color: Colors.textTertiary,
+  },
+  socialRow: {
+    flexDirection: 'row',
+    gap: Spacing.lg,
+    marginBottom: Spacing.xxl,
+  },
+  socialButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    backgroundColor: Colors.surface,
+    paddingVertical: Spacing.lg,
+    borderRadius: Radii.sm,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+  socialText: {
+    fontSize: Fonts.sizes.sm,
+    fontWeight: '500',
+    color: Colors.text,
+  },
+  loginRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.xxl,
+  },
+  loginText: {
+    fontSize: Fonts.sizes.lg,
+    color: Colors.textSecondary,
+  },
+  loginLink: {
+    fontSize: Fonts.sizes.lg,
+    color: Colors.primary,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+});
+

@@ -5,8 +5,8 @@ import {
   ActivityIndicator,
   ViewStyle,
   TextStyle,
+  View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Fonts, Spacing, Radii } from '@/constants/theme';
 
 interface ButtonProps {
@@ -20,7 +20,6 @@ interface ButtonProps {
   fullWidth?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
-  className?: string;
 }
 
 export function Button({
@@ -39,88 +38,72 @@ export function Button({
 
   const sizeStyles = {
     sm: { paddingVertical: Spacing.sm, paddingHorizontal: Spacing.lg, fontSize: Fonts.sizes.sm },
-    md: { paddingVertical: Spacing.md + 2, paddingHorizontal: Spacing.xl, fontSize: Fonts.sizes.md },
+    md: { paddingVertical: Spacing.md, paddingHorizontal: Spacing.xl, fontSize: Fonts.sizes.md },
     lg: { paddingVertical: Spacing.lg, paddingHorizontal: Spacing.xxl, fontSize: Fonts.sizes.lg },
   };
 
   const currentSize = sizeStyles[size];
 
-  if (variant === 'primary') {
-    return (
-      <TouchableOpacity
-        onPress={onPress}
-        disabled={isDisabled}
-        activeOpacity={0.8}
-        style={[fullWidth && { width: '100%' }, style]}
-      >
-        <LinearGradient
-          colors={isDisabled ? ['#94A3B8', '#94A3B8'] : [Colors.primary, Colors.primaryDark]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          className="flex-row items-center justify-center rounded-xl overflow-hidden"
-          style={{
-            paddingVertical: currentSize.paddingVertical,
-            paddingHorizontal: currentSize.paddingHorizontal,
-          }}
-        >
-          {loading ? (
-            <ActivityIndicator color={Colors.textInverse} size="small" />
-          ) : (
-            <>
-              {icon}
-              <Text
-                className="font-semibold text-white"
-                style={[
-                  { fontSize: currentSize.fontSize },
-                  icon ? { marginLeft: Spacing.sm } : null,
-                  textStyle,
-                ]}
-              >
-                {title}
-              </Text>
-            </>
-          )}
-        </LinearGradient>
-      </TouchableOpacity>
-    );
-  }
-
   const variantStyles: Record<string, { bg: string; border: string; textColor: string }> = {
-    secondary: { bg: Colors.primaryFaded, border: 'transparent', textColor: Colors.primary },
-    outline: { bg: 'transparent', border: Colors.border, textColor: Colors.text },
-    danger: { bg: Colors.dangerLight, border: 'transparent', textColor: Colors.danger },
-    ghost: { bg: 'transparent', border: 'transparent', textColor: Colors.primary },
+    primary: {
+      bg: Colors.primary,
+      border: Colors.primary,
+      textColor: Colors.textInverse,
+    },
+    secondary: {
+      bg: Colors.primaryFaded,
+      border: Colors.primaryFaded,
+      textColor: Colors.primary,
+    },
+    outline: {
+      bg: 'transparent',
+      border: Colors.border,
+      textColor: Colors.text,
+    },
+    danger: {
+      bg: Colors.dangerLight,
+      border: Colors.dangerLight,
+      textColor: Colors.danger,
+    },
+    ghost: {
+      bg: 'transparent',
+      border: 'transparent',
+      textColor: Colors.primary,
+    },
   };
 
   const v = variantStyles[variant] || variantStyles.outline;
+
+  const buttonStyle: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: Radii.sm,
+    backgroundColor: isDisabled ? '#F1F5F9' : v.bg,
+    borderWidth: 1,
+    borderColor: isDisabled ? '#E2E8F0' : v.border,
+    paddingVertical: currentSize.paddingVertical,
+    paddingHorizontal: currentSize.paddingHorizontal,
+    width: fullWidth ? '100%' : undefined,
+  };
 
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={isDisabled}
       activeOpacity={0.7}
-      className={`flex-row items-center justify-center rounded-xl overflow-hidden ${fullWidth ? 'w-full' : ''}`}
-      style={[
-        {
-          backgroundColor: isDisabled ? '#F1F5F9' : v.bg,
-          borderWidth: variant === 'outline' ? 1.5 : 0,
-          borderColor: v.border,
-          paddingVertical: currentSize.paddingVertical,
-          paddingHorizontal: currentSize.paddingHorizontal,
-        },
-        style,
-      ]}
+      style={[buttonStyle, style]}
     >
       {loading ? (
-        <ActivityIndicator color={v.textColor} size="small" />
+        <ActivityIndicator color={isDisabled ? '#94A3B8' : v.textColor} size="small" />
       ) : (
         <>
           {icon}
           <Text
-            className="font-semibold"
             style={[
               {
                 fontSize: currentSize.fontSize,
+                fontWeight: '700',
                 color: isDisabled ? '#94A3B8' : v.textColor,
               },
               icon ? { marginLeft: Spacing.sm } : null,
@@ -134,5 +117,3 @@ export function Button({
     </TouchableOpacity>
   );
 }
-
-
