@@ -35,8 +35,8 @@ export default function SubmitDetailsScreen() {
   const [licenseNumber, setLicenseNumber] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const isResubmit = user?.doctorProfile?.approvalStatus === 'PHASE2_REJECTED';
-  const phase2Reason = user?.doctorProfile?.phase2RejectionReason;
+  const isResubmit = user?.doctorProfile?.approvalStatus === 'REJECTED';
+  const rejectionReason = user?.doctorProfile?.rejectionReason;
 
   // Pre-fill from existing profile
   const loadProfile = useCallback(async () => {
@@ -165,12 +165,12 @@ export default function SubmitDetailsScreen() {
           </View>
 
           {/* Rejection banner (re-submit flow) */}
-          {isResubmit && phase2Reason && (
+          {isResubmit && rejectionReason && (
             <View style={[styles.rejectionBanner, Shadows.sm]}>
               <Ionicons name="alert-circle" size={22} color={Colors.danger} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.rejectionTitle}>Previous Submission Rejected</Text>
-                <Text style={styles.rejectionText}>{phase2Reason}</Text>
+                <Text style={styles.rejectionText}>{rejectionReason}</Text>
               </View>
             </View>
           )}

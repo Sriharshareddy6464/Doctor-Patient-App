@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { patientService } from '@/services/patient';
 import { doctorService } from '@/services/doctor';
-import { Colors } from '@/constants/theme';
+import { Colors, Fonts, Spacing, Radii } from '@/constants/theme';
 
 type CallParams = {
   appointmentId: string;
@@ -164,7 +164,7 @@ export default function CallScreen() {
   };
 
   return (
-    <View className="flex-1 bg-[#0a1628]">
+    <View style={styles.container}>
       <LinearGradient
         colors={['#0a1628', '#0d2137', '#0a1628']}
         style={StyleSheet.absoluteFill}
@@ -172,85 +172,84 @@ export default function CallScreen() {
 
       {/* Top Bar */}
       <Animated.View
-        className="flex-row justify-between items-center px-6 pb-4"
-        style={{ paddingTop: insets.top + 12, opacity: fadeIn }}
+        style={[styles.topBar, { paddingTop: insets.top + 12, opacity: fadeIn }]}
       >
-        <View className="flex-row items-center gap-2">
+        <View style={styles.statusRow}>
           <Animated.View
-            className="w-2 h-2 rounded-full"
-            style={{
-              backgroundColor: isConnected ? '#10B981' : '#f59e0b',
-              opacity: isConnected ? dotAnim : 1,
-            }}
+            style={[
+              styles.statusDot,
+              {
+                backgroundColor: isConnected ? Colors.success : Colors.warning,
+                opacity: isConnected ? dotAnim : 1,
+              }
+            ]}
           />
-          <Text className="text-white/70 text-sm font-medium">
+          <Text style={styles.statusText}>
             {isConnected ? 'Connected' : 'Connecting...'}
           </Text>
         </View>
 
         {isConnected && (
-          <View className="flex-row items-center gap-1 bg-white/10 px-4 py-1.5 rounded-full">
+          <View style={styles.timerContainer}>
             <Ionicons name="time-outline" size={14} color="rgba(255,255,255,0.6)" />
-            <Text className="text-white text-sm font-bold tabular-nums">{formatTime(elapsed)}</Text>
+            <Text style={styles.timerText}>{formatTime(elapsed)}</Text>
           </View>
         )}
       </Animated.View>
 
       {/* Main Content */}
       <Animated.View
-        className="flex-1 justify-center items-center px-6"
-        style={{ opacity: fadeIn, transform: [{ translateY: slideUp }] }}
+        style={[styles.mainContent, { opacity: fadeIn, transform: [{ translateY: slideUp }] }]}
       >
         {/* Remote User Avatar */}
         <Animated.View
-          className="mb-8 relative"
-          style={!isConnected ? { transform: [{ scale: pulseAnim }] } : {}}
+          style={[styles.avatarWrapper, !isConnected ? { transform: [{ scale: pulseAnim }] } : {}]}
         >
           <LinearGradient
-            colors={isConnected ? ['#0058bc', '#004494'] : ['#374151', '#1f2937']}
-            className="w-[120px] h-[120px] rounded-full justify-center items-center"
+            colors={isConnected ? [Colors.primary, Colors.primaryDark] : ['#374151', '#1f2937']}
+            style={styles.avatarGradient}
           >
-            <Text className="text-[40px] font-bold text-white">
+            <Text style={styles.avatarText}>
               {getInitials(params.remoteName || 'U')}
             </Text>
           </LinearGradient>
           {isConnected && (
-            <View className="absolute -top-1 -left-1 -right-1 -bottom-1 rounded-[64px] border-2 border-[#0058bc]/40" />
+            <View style={styles.avatarBorder} />
           )}
         </Animated.View>
 
         {/* Remote User Info */}
-        <Text className="text-3xl font-bold text-white mb-2 text-center">
+        <Text style={styles.remoteName}>
           {params.remoteRole === 'doctor' ? 'Dr. ' : ''}
           {params.remoteName || 'Unknown'}
         </Text>
-        <View className="bg-[#0058bc]/25 px-6 py-1 rounded-full mb-6">
-          <Text className="text-[#adc6ff] text-xs font-semibold uppercase tracking-[1px]">
+        <View style={styles.roleBadge}>
+          <Text style={styles.roleText}>
             {params.remoteRole === 'doctor' ? 'Doctor' : 'Patient'}
           </Text>
         </View>
 
         {/* Appointment Info */}
-        <View className="flex-row items-center gap-2 mb-6">
-          <View className="flex-row items-center gap-1">
+        <View style={styles.infoRow}>
+          <View style={styles.infoCol}>
             <Ionicons name="calendar-outline" size={14} color="rgba(255,255,255,0.5)" />
-            <Text className="text-white/50 text-sm font-medium">{params.appointmentDate}</Text>
+            <Text style={styles.infoText}>{params.appointmentDate}</Text>
           </View>
-          <View className="w-[3px] h-[3px] rounded-[1.5px] bg-white/30" />
-          <View className="flex-row items-center gap-1">
+          <View style={styles.infoDivider} />
+          <View style={styles.infoCol}>
             <Ionicons name="time-outline" size={14} color="rgba(255,255,255,0.5)" />
-            <Text className="text-white/50 text-sm font-medium">{params.appointmentTime}</Text>
+            <Text style={styles.infoText}>{params.appointmentTime}</Text>
           </View>
         </View>
 
         {/* Status Message */}
         {!isConnected && (
-          <Text className="text-white/40 text-sm font-normal">
+          <Text style={styles.connectionText}>
             Setting up secure connection...
           </Text>
         )}
         {isConnected && elapsed < 5 && (
-          <Text className="text-white/40 text-sm font-normal">
+          <Text style={styles.connectionText}>
             Call connected successfully
           </Text>
         )}
@@ -258,18 +257,17 @@ export default function CallScreen() {
 
       {/* Bottom Controls */}
       <Animated.View
-        className="px-6 items-center"
-        style={{ paddingBottom: insets.bottom + 24, opacity: fadeIn }}
+        style={[styles.bottomControls, { paddingBottom: insets.bottom + 24, opacity: fadeIn }]}
       >
         {/* Channel info (subtle) */}
-        <Text className="text-white/15 text-xs mb-8 tabular-nums">
+        <Text style={styles.channelText}>
           Channel: {params.channelName}
         </Text>
 
-        <View className="flex-row items-center justify-center gap-10">
+        <View style={styles.controlRow}>
           {/* Mute Button */}
           <TouchableOpacity
-            className={`items-center gap-2 ${isMuted ? 'opacity-100' : ''}`}
+            style={styles.controlButton}
             onPress={() => setIsMuted(!isMuted)}
             activeOpacity={0.7}
           >
@@ -278,30 +276,30 @@ export default function CallScreen() {
               size={24}
               color={isMuted ? Colors.danger : '#fff'}
             />
-            <Text className={`text-xs font-medium ${isMuted ? 'text-danger' : 'text-white/60'}`}>
+            <Text style={[styles.controlText, isMuted ? styles.controlTextMuted : styles.controlTextNormal]}>
               {isMuted ? 'Unmute' : 'Mute'}
             </Text>
           </TouchableOpacity>
 
           {/* End Call Button */}
           <TouchableOpacity
-            className="items-center gap-2"
+            style={styles.controlButton}
             onPress={confirmEndCall}
             activeOpacity={0.7}
             disabled={isEnding}
           >
             <LinearGradient
               colors={['#ef4444', '#dc2626']}
-              className="w-16 h-16 rounded-full justify-center items-center"
+              style={styles.endCallButton}
             >
               <Ionicons name="call" size={28} color="#fff" style={{ transform: [{ rotate: '135deg' }] }} />
             </LinearGradient>
-            <Text className="text-white/60 text-xs font-medium">End</Text>
+            <Text style={styles.controlTextNormal}>End</Text>
           </TouchableOpacity>
 
           {/* Speaker Button */}
           <TouchableOpacity
-            className={`items-center gap-2 ${!isSpeaker ? 'opacity-100' : ''}`}
+            style={styles.controlButton}
             onPress={() => setIsSpeaker(!isSpeaker)}
             activeOpacity={0.7}
           >
@@ -310,7 +308,7 @@ export default function CallScreen() {
               size={24}
               color={!isSpeaker ? Colors.danger : '#fff'}
             />
-            <Text className={`text-xs font-medium ${!isSpeaker ? 'text-danger' : 'text-white/60'}`}>
+            <Text style={[styles.controlText, !isSpeaker ? styles.controlTextMuted : styles.controlTextNormal]}>
               {isSpeaker ? 'Speaker' : 'Muted'}
             </Text>
           </TouchableOpacity>
@@ -319,3 +317,165 @@ export default function CallScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0a1628',
+  },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.lg,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  statusText: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: Fonts.sizes.sm,
+    fontWeight: '500',
+  },
+  timerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: 6,
+    borderRadius: Radii.full,
+  },
+  timerText: {
+    color: '#fff',
+    fontSize: Fonts.sizes.sm,
+    fontWeight: '700',
+    fontVariant: ['tabular-nums'],
+  },
+  mainContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.xl,
+  },
+  avatarWrapper: {
+    marginBottom: Spacing.xxl,
+    position: 'relative',
+  },
+  avatarGradient: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    fontSize: 40,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  avatarBorder: {
+    position: 'absolute',
+    top: -4,
+    left: -4,
+    right: -4,
+    bottom: -4,
+    borderRadius: 64,
+    borderWidth: 2,
+    borderColor: Colors.primary + '40',
+  },
+  remoteName: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: Spacing.sm,
+    textAlign: 'center',
+  },
+  roleBadge: {
+    backgroundColor: Colors.primaryFaded + '30',
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: 4,
+    borderRadius: Radii.full,
+    marginBottom: Spacing.xl,
+  },
+  roleText: {
+    color: Colors.primary,
+    fontSize: Fonts.sizes.xs,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.xl,
+  },
+  infoCol: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  infoText: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: Fonts.sizes.sm,
+    fontWeight: '500',
+  },
+  infoDivider: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+  },
+  connectionText: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: Fonts.sizes.sm,
+    fontWeight: '400',
+  },
+  bottomControls: {
+    paddingHorizontal: Spacing.xl,
+    alignItems: 'center',
+  },
+  channelText: {
+    color: 'rgba(255,255,255,0.15)',
+    fontSize: Fonts.sizes.xs,
+    marginBottom: Spacing.xxl,
+    fontVariant: ['tabular-nums'],
+  },
+  controlRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 40,
+  },
+  controlButton: {
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  controlText: {
+    fontSize: Fonts.sizes.xs,
+    fontWeight: '500',
+  },
+  controlTextNormal: {
+    color: 'rgba(255,255,255,0.6)',
+  },
+  controlTextMuted: {
+    color: Colors.danger,
+  },
+  endCallButton: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+

@@ -32,8 +32,8 @@ export default function PatientTabLayout() {
         name="home"
         options={{
           title: 'Doctors',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="search" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'search' : 'search-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -41,8 +41,8 @@ export default function PatientTabLayout() {
         name="appointments"
         options={{
           title: 'Appointments',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -50,8 +50,8 @@ export default function PatientTabLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={size} color={color} />
           ),
         }}
       />

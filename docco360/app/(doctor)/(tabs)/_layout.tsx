@@ -32,8 +32,8 @@ export default function DoctorTabLayout() {
         name="dashboard"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="grid" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'grid' : 'grid-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -41,8 +41,8 @@ export default function DoctorTabLayout() {
         name="schedule"
         options={{
           title: 'Schedule',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -50,8 +50,8 @@ export default function DoctorTabLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={size} color={color} />
           ),
         }}
       />

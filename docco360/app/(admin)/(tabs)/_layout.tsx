@@ -32,8 +32,8 @@ export default function AdminTabLayout() {
         name="dashboard"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="stats-chart" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'stats-chart' : 'stats-chart-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -41,8 +41,8 @@ export default function AdminTabLayout() {
         name="doctors"
         options={{
           title: 'Doctors',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="medkit" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'medkit' : 'medkit-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -50,8 +50,8 @@ export default function AdminTabLayout() {
         name="patients"
         options={{
           title: 'Patients',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'people' : 'people-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -59,8 +59,8 @@ export default function AdminTabLayout() {
         name="appointments"
         options={{
           title: 'Bookings',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -68,8 +68,8 @@ export default function AdminTabLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-circle-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'person-circle' : 'person-circle-outline'} size={size} color={color} />
           ),
         }}
       />

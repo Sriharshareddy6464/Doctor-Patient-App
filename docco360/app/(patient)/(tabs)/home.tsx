@@ -7,6 +7,7 @@ import {
   RefreshControl,
   TouchableOpacity,
   ScrollView,
+  StyleSheet,
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,7 +18,7 @@ import { patientService, DoctorListing } from '@/services/patient';
 import { DoctorCard } from '@/components/DoctorCard';
 import { Avatar } from '@/components/Avatar';
 import { LoadingScreen, EmptyState } from '@/components/LoadingScreen';
-import { Colors, Gradients } from '@/constants/theme';
+import { Colors, Fonts, Spacing, Radii, Shadows, Gradients } from '@/constants/theme';
 import type { Appointment } from '@/services/doctor';
 
 const CATEGORIES = [
@@ -97,20 +98,20 @@ export default function PatientHomeScreen() {
   if (loading) return <LoadingScreen />;
 
   return (
-    <View className="flex-1 bg-background">
+    <View style={styles.container}>
       {/* Header bar */}
-      <View className="flex-row justify-between items-center px-6 pb-4 bg-background" style={{ paddingTop: insets.top + 12 }}>
-        <View className="flex-row items-center gap-4">
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+        <View style={styles.headerProfile}>
           <Avatar name={user?.name || 'P'} size={48} />
-          <View className="justify-center">
-            <Text className="text-xl font-bold text-textMain">Hi, {user?.name?.split(' ')[0]}</Text>
-            <Text className="text-sm text-textSecondary mt-0.5">How is your health?</Text>
+          <View style={styles.headerInfo}>
+            <Text style={styles.headerName}>Hi, {user?.name?.split(' ')[0]}</Text>
+            <Text style={styles.headerSub}>How is your health?</Text>
           </View>
         </View>
-        <View className="flex-row items-center">
-          <TouchableOpacity className="w-11 h-11 rounded-full bg-surface justify-center items-center relative" activeOpacity={0.7}>
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={styles.notificationBtn} activeOpacity={0.7}>
             <Ionicons name="notifications-outline" size={24} color={Colors.primary} />
-            {upcomingAppointment && <View className="absolute top-3 right-3 w-2 h-2 rounded-full bg-danger" />}
+            {upcomingAppointment && <View style={styles.notificationDot} />}
           </TouchableOpacity>
         </View>
       </View>
@@ -120,12 +121,92 @@ export default function PatientHomeScreen() {
         data={filteredDoctors}
         keyExtractor={(item) => item.user.id}
         ListHeaderComponent={
-          <View className="pt-3">
+          <View style={styles.bodyContent}>
+            {/* Account Active status strip */}
+            <View style={styles.statusStrip}>
+              <Ionicons name="pulse" size={14} color="#000" />
+              <Text style={styles.statusStripText}>Account Active</Text>
+              <View style={styles.statusDot} />
+            </View>
+
+            {/* Quick action cards ScrollView */}
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false} 
+              contentContainerStyle={styles.cardsScroll}
+            >
+              {/* Card 1: Find a Specialist */}
+              <View style={styles.card}>
+                <View>
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.cardTag}>Find a Specialist</Text>
+                    <Ionicons name="search" size={18} color="#000" />
+                  </View>
+                  <Text style={styles.cardDescription}>
+                    Browse our verified directory of top-tier medical professionals.
+                  </Text>
+                </View>
+                <View style={styles.cardActionBtn}>
+                  <Text style={styles.cardActionText}>Search Directory</Text>
+                  <Ionicons name="arrow-forward" size={12} color="#000" />
+                </View>
+              </View>
+
+              {/* Card 2: Appointments */}
+              <TouchableOpacity 
+                style={styles.card}
+                onPress={() => router.push('/(patient)/(tabs)/appointments')}
+                activeOpacity={0.8}
+              >
+                <View>
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.cardTag}>Appointments</Text>
+                    <Ionicons name="calendar" size={18} color="#000" />
+                  </View>
+                  <Text style={styles.cardDescription}>
+                    Manage your upcoming visits and join secure video consultations.
+                  </Text>
+                </View>
+                {appointments.filter(a => a.status === 'CONFIRMED').length > 0 && (
+                  <View style={styles.countBadge}>
+                    <Text style={styles.countBadgeText}>
+                      {appointments.filter(a => a.status === 'CONFIRMED').length} upcoming
+                    </Text>
+                  </View>
+                )}
+                <View style={styles.cardActionBtn}>
+                  <Text style={styles.cardActionText}>View All</Text>
+                  <Ionicons name="arrow-forward" size={12} color="#000" />
+                </View>
+              </TouchableOpacity>
+
+              {/* Card 3: Health Profile */}
+              <TouchableOpacity 
+                style={styles.card}
+                onPress={() => router.push('/(patient)/(tabs)/profile')}
+                activeOpacity={0.8}
+              >
+                <View>
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.cardTag}>Health Profile</Text>
+                    <Ionicons name="document-text" size={18} color="#000" />
+                  </View>
+                  <Text style={styles.cardDescription}>
+                    Update your medical details, allergies, and emergency contacts.
+                  </Text>
+                </View>
+                <View style={styles.cardActionBtn}>
+                  <Text style={styles.cardActionText}>Edit Profile</Text>
+                  <Ionicons name="arrow-forward" size={12} color="#000" />
+                </View>
+              </TouchableOpacity>
+            </ScrollView>
+
             {/* Search Bar */}
-            <View className="flex-row items-center bg-[#F1F5F9] rounded-md px-5 h-12 gap-3 mb-6 mx-6 shadow-sm">
+            <View style={styles.searchBar}>
               <Ionicons name="search" size={20} color={Colors.textSecondary} />
               <TextInput
-                className="flex-1 text-base text-textMain"
+                style={styles.searchInput}
                 placeholder="Search doctors, specializations..."
                 placeholderTextColor={Colors.textTertiary}
                 value={search}
@@ -143,15 +224,15 @@ export default function PatientHomeScreen() {
 
             {/* Upcoming Schedule Card */}
             {upcomingAppointment && (
-              <View className="mb-6 px-6">
-                <View className="flex-row justify-between items-center mb-4">
-                  <Text className="text-lg font-bold text-textMain">Upcoming Schedule</Text>
+              <View style={styles.sectionContainer}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Upcoming Schedule</Text>
                   <TouchableOpacity onPress={() => router.push('/(patient)/(tabs)/appointments')}>
-                    <Text className="text-sm font-bold text-primary">See All</Text>
+                    <Text style={styles.seeAllText}>See All</Text>
                   </TouchableOpacity>
                 </View>
                 <TouchableOpacity
-                  className="rounded-xl overflow-hidden shadow-lg"
+                  style={styles.scheduleCardTouch}
                   activeOpacity={0.9}
                   onPress={() => router.push(`/(patient)/appointment/${upcomingAppointment.id}`)}
                 >
@@ -159,19 +240,19 @@ export default function PatientHomeScreen() {
                     colors={Gradients.primary}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    className="flex-row justify-between items-center p-6"
+                    style={styles.scheduleCardGradient}
                   >
-                    <View className="flex-1">
-                      <View className="flex-row items-center gap-1.5">
-                        <Text className="text-lg font-bold text-white">Dr. {upcomingAppointment.doctor?.name}</Text>
+                    <View style={styles.scheduleInfo}>
+                      <View style={styles.scheduleDoctorRow}>
+                        <Text style={styles.scheduleDoctorName}>Dr. {upcomingAppointment.doctor?.name}</Text>
                         <Ionicons name="checkmark-circle" size={16} color="#fff" />
                       </View>
-                      <Text className="text-sm text-white/80 mt-0.5 mb-4">
+                      <Text style={styles.scheduleDoctorSpecialty}>
                         {upcomingAppointment.doctor?.doctorProfile?.specializations?.join(', ') || 'Specialist'}
                       </Text>
-                      <View className="flex-row items-center gap-1.5 bg-white/20 px-4 py-1.5 rounded self-start">
+                      <View style={styles.scheduleTimeBadge}>
                         <Ionicons name="calendar-outline" size={14} color="rgba(255,255,255,0.8)" />
-                        <Text className="text-xs font-semibold text-white">
+                        <Text style={styles.scheduleTimeText}>
                           {upcomingAppointment.timeSlot?.date ? new Date(upcomingAppointment.timeSlot.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
                           , {upcomingAppointment.timeSlot?.startTime}
                         </Text>
@@ -184,32 +265,35 @@ export default function PatientHomeScreen() {
             )}
 
             {/* Categories */}
-            <View className="mb-6">
-              <View className="flex-row justify-between items-center mb-4 px-6">
-                <Text className="text-lg font-bold text-textMain">Categories</Text>
+            <View style={styles.categoriesSection}>
+              <View style={styles.categoriesHeader}>
+                <Text style={styles.sectionTitle}>Categories</Text>
               </View>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerClassName="gap-4 pb-1 px-6"
+                contentContainerStyle={styles.categoriesScroll}
               >
                 {CATEGORIES.map((cat) => {
                   const isActive = selectedCategory === cat.id;
                   return (
                     <TouchableOpacity
                       key={cat.id}
-                      className={`flex-row items-center bg-surface px-4 py-3 rounded-md border gap-3 ${isActive ? 'bg-primary border-primary' : 'border-[#e2e8f0]'}`}
+                      style={[
+                        styles.categoryCard,
+                        isActive ? styles.categoryCardActive : styles.categoryCardInactive,
+                      ]}
                       onPress={() => handleCategoryPress(cat.id)}
                       activeOpacity={0.8}
                     >
-                      <View className={`w-9 h-9 rounded justify-center items-center`} style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.2)' : cat.bg }}>
+                      <View style={[styles.categoryIconContainer, { backgroundColor: isActive ? 'rgba(255,255,255,0.2)' : cat.bg }]}>
                         <Ionicons
                           name={cat.icon as any}
                           size={24}
                           color={isActive ? '#fff' : cat.color}
                         />
                       </View>
-                      <Text className={`text-sm font-semibold ${isActive ? 'text-white font-bold' : 'text-textSecondary'}`}>
+                      <Text style={[styles.categoryText, isActive ? styles.categoryTextActive : styles.categoryTextInactive]}>
                         {cat.name}
                       </Text>
                     </TouchableOpacity>
@@ -219,20 +303,20 @@ export default function PatientHomeScreen() {
             </View>
 
             {/* Top Doctors Label */}
-            <View className="flex-row justify-between items-center mb-4 px-6">
-              <Text className="text-lg font-bold text-textMain">Top Doctors</Text>
+            <View style={styles.categoriesHeader}>
+              <Text style={styles.sectionTitle}>Top Doctors</Text>
             </View>
           </View>
         }
         renderItem={({ item }) => (
-          <View className="px-6">
+          <View style={styles.doctorCardWrapper}>
             <DoctorCard
               doctor={item}
               onPress={() => router.push(`/(patient)/doctor/${item.user.id}`)}
             />
           </View>
         )}
-        contentContainerClassName="pb-10"
+        contentContainerStyle={styles.listContainer}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -244,7 +328,7 @@ export default function PatientHomeScreen() {
           />
         }
         ListEmptyComponent={
-          <View className="px-6">
+          <View style={styles.doctorCardWrapper}>
             <EmptyState
               title="No Doctors Found"
               subtitle={search || selectedCategory ? 'Try a different search term or category' : 'No approved doctors available yet'}
@@ -256,3 +340,291 @@ export default function PatientHomeScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.lg,
+    backgroundColor: Colors.background,
+  },
+  headerProfile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.lg,
+  },
+  headerInfo: {
+    justifyContent: 'center',
+  },
+  headerName: {
+    fontSize: Fonts.sizes.xl,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  headerSub: {
+    fontSize: Fonts.sizes.md,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  notificationBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  notificationDot: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.danger,
+  },
+  bodyContent: {
+    paddingTop: Spacing.sm,
+  },
+  statusStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radii.xs,
+    marginBottom: Spacing.xl,
+    marginHorizontal: Spacing.xl,
+    alignSelf: 'flex-start',
+  },
+  statusStripText: {
+    color: Colors.textSecondary,
+    fontWeight: '600',
+    fontSize: Fonts.sizes.sm,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    backgroundColor: '#000',
+    borderRadius: 3,
+  },
+  cardsScroll: {
+    gap: Spacing.lg,
+    paddingBottom: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    marginBottom: Spacing.lg,
+  },
+  card: {
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: Radii.xs,
+    padding: Spacing.xl,
+    width: 256,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: Spacing.md,
+  },
+  cardTag: {
+    fontSize: Fonts.sizes.xs,
+    fontWeight: '700',
+    color: Colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  cardDescription: {
+    fontSize: Fonts.sizes.sm,
+    color: Colors.textTertiary,
+    lineHeight: Fonts.lineHeights.md,
+    marginBottom: Spacing.lg,
+  },
+  cardActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: Radii.xs,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 6,
+    alignSelf: 'flex-start',
+  },
+  cardActionText: {
+    fontSize: Fonts.sizes.xs,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  countBadge: {
+    marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: Radii.xs,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    backgroundColor: '#f5f5f5',
+    alignSelf: 'flex-start',
+  },
+  countBadgeText: {
+    fontSize: Fonts.sizes.xs,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    borderRadius: Radii.sm,
+    paddingHorizontal: Spacing.xl,
+    height: 48,
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+    marginHorizontal: Spacing.xl,
+    ...Shadows.sm,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: Fonts.sizes.lg,
+    color: Colors.text,
+  },
+  sectionContainer: {
+    marginBottom: Spacing.xl,
+    paddingHorizontal: Spacing.xl,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: Fonts.sizes.xl,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  seeAllText: {
+    fontSize: Fonts.sizes.md,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  scheduleCardTouch: {
+    borderRadius: Radii.md,
+    overflow: 'hidden',
+    ...Shadows.lg,
+  },
+  scheduleCardGradient: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: Spacing.xl,
+  },
+  scheduleInfo: {
+    flex: 1,
+  },
+  scheduleDoctorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  scheduleDoctorName: {
+    fontSize: Fonts.sizes.lg,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  scheduleDoctorSpecialty: {
+    fontSize: Fonts.sizes.md,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 2,
+    marginBottom: Spacing.lg,
+  },
+  scheduleTimeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: 6,
+    borderRadius: Radii.xs,
+    alignSelf: 'flex-start',
+  },
+  scheduleTimeText: {
+    fontSize: Fonts.sizes.xs,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  categoriesSection: {
+    marginBottom: Spacing.xl,
+  },
+  categoriesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+  },
+  categoriesScroll: {
+    gap: Spacing.lg,
+    paddingBottom: 4,
+    paddingHorizontal: Spacing.xl,
+  },
+  categoryCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: Radii.sm,
+    borderWidth: 1,
+    gap: Spacing.md,
+  },
+  categoryCardActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  categoryCardInactive: {
+    borderColor: '#e2e8f0',
+  },
+  categoryIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: Radii.xs,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  categoryText: {
+    fontSize: Fonts.sizes.md,
+    fontWeight: '600',
+  },
+  categoryTextActive: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  categoryTextInactive: {
+    color: Colors.textSecondary,
+  },
+  doctorCardWrapper: {
+    paddingHorizontal: Spacing.xl,
+  },
+  listContainer: {
+    paddingBottom: Spacing.xxl,
+  },
+});
+

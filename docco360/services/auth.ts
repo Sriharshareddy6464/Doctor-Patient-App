@@ -9,15 +9,8 @@ export interface User {
   updatedAt?: string;
   // Doctor-specific fields returned from /auth/me
   doctorProfile?: {
-    approvalStatus:
-      | 'PHASE1_PENDING'
-      | 'PHASE1_APPROVED'
-      | 'REJECTED'
-      | 'PHASE2_PENDING'
-      | 'PHASE2_APPROVED'
-      | 'PHASE2_REJECTED';
+    approvalStatus: 'NEEDS_DETAILS' | 'PENDING' | 'APPROVED' | 'REJECTED';
     canTakeAppointments: boolean;
-    phase2RejectionReason: string | null;
     rejectionReason?: string | null;
     specializations?: string[];
     experience?: number;

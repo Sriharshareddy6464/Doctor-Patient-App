@@ -19,6 +19,8 @@ export default function DoctorScheduleScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState('');
+  const [isRange, setIsRange] = useState(false);
+  const [selectedEndDate, setSelectedEndDate] = useState('');
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('17:00');
   const [createdSlots, setCreatedSlots] = useState<TimeSlot[]>([]);
@@ -48,15 +50,27 @@ export default function DoctorScheduleScreen() {
       Alert.alert('Select Date', 'Please select a date first');
       return;
     }
+    if (isRange && !selectedEndDate) {
+      Alert.alert('Select End Date', 'Please select an end date for the range');
+      return;
+    }
     if (startTime >= endTime) {
       Alert.alert('Invalid Time', 'End time must be after start time');
       return;
     }
     setLoading(true);
     try {
-      const slots = await doctorService.createTimeSlots(selectedDate, startTime, endTime);
+      const slots = await doctorService.createTimeSlots(
+        selectedDate,
+        startTime,
+        endTime,
+        isRange ? selectedEndDate : undefined
+      );
       setCreatedSlots(slots);
-      Alert.alert('Success', `${slots.length} time slot(s) created for ${selectedDate}`);
+      const msg = isRange 
+        ? `${slots.length} slots created across the date range (${selectedDate} to ${selectedEndDate}).`
+        : `${slots.length} time slot(s) created for ${selectedDate}`;
+      Alert.alert('Success', msg);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to create time slots');
     } finally {
@@ -101,10 +115,28 @@ export default function DoctorScheduleScreen() {
 
       {/* Date Selector */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Select Date</Text>
+        <View style={styles.rangeRow}>
+          <Text style={styles.sectionTitle}>{isRange ? 'Select Date Range' : 'Select Date'}</Text>
+          <TouchableOpacity 
+            style={styles.rangeToggle}
+            onPress={() => {
+              setIsRange(!isRange);
+              setSelectedDate('');
+              setSelectedEndDate('');
+              setCreatedSlots([]);
+            }}
+            activeOpacity={0.7}
+          >
+            <Ionicons name={isRange ? 'checkbox' : 'square-outline'} size={18} color={Colors.primary} />
+            <Text style={styles.rangeToggleText}>DATE RANGE</Text>
+          </TouchableOpacity>
+        </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dateScrollContainer}>
           {dates.map((d) => {
-            const isActive = selectedDate === d.full;
+            const isStart = selectedDate === d.full;
+            const isEnd = selectedEndDate === d.full;
+            const inRange = isRange && selectedDate && selectedEndDate && d.full >= selectedDate && d.full <= selectedEndDate;
+            const isActive = isStart || isEnd || inRange;
             return (
               <TouchableOpacity
                 key={d.full}
@@ -114,7 +146,20 @@ export default function DoctorScheduleScreen() {
                   isActive && Shadows.sm,
                 ]}
                 onPress={() => {
-                  setSelectedDate(d.full);
+                  if (isRange) {
+                    if (!selectedDate || d.full < selectedDate) {
+                      setSelectedDate(d.full);
+                      setSelectedEndDate('');
+                    } else if (selectedDate && !selectedEndDate) {
+                      setSelectedEndDate(d.full);
+                    } else {
+                      setSelectedDate(d.full);
+                      setSelectedEndDate('');
+                    }
+                  } else {
+                    setSelectedDate(d.full);
+                    setSelectedEndDate('');
+                  }
                   setCreatedSlots([]);
                 }}
                 activeOpacity={0.8}
@@ -193,7 +238,9 @@ export default function DoctorScheduleScreen() {
           <Ionicons name="time" size={18} color={Colors.primary} />
           <Text style={styles.summaryText}>
             {selectedDate
-              ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+              ? isRange && selectedEndDate
+                ? `${new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(selectedEndDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                : new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
               : '(select date)'}{' '}
             • {startTime} → {endTime}
           </Text>
@@ -272,7 +319,23 @@ const styles = StyleSheet.create({
     fontSize: Fonts.sizes.lg,
     fontWeight: '700',
     color: Colors.text,
+  },
+  rangeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: Spacing.md,
+  },
+  rangeToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  rangeToggleText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: Colors.textSecondary,
+    letterSpacing: 0.5,
   },
   cardSectionTitle: {
     fontSize: Fonts.sizes.lg,

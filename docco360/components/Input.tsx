@@ -5,9 +5,10 @@ import {
   Text,
   TextInputProps,
   TouchableOpacity,
+  StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/theme';
+import { Colors, Fonts, Spacing, Radii } from '@/constants/theme';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -29,43 +30,82 @@ export function Input({
   const [isFocused, setIsFocused] = useState(false);
 
   return (
-    <View className="mb-4" collapsable={false}>
-      {label && <Text className="text-sm font-semibold text-text mb-2">{label}</Text>}
+    <View style={styles.container}>
+      {label && <Text style={styles.label}>{label}</Text>}
       <View
-        collapsable={false}
-        className={`flex-row items-center bg-[#F1F5F9] rounded-xl border-2 px-4 min-h-[52px] ${
-          isFocused ? 'border-primary bg-white shadow-sm' : 'border-transparent'
-        } ${error ? 'border-danger' : ''}`}
+        style={[
+          styles.inputWrapper,
+          {
+            borderColor: error ? Colors.danger : (isFocused ? Colors.primary : Colors.border),
+            backgroundColor: isFocused ? Colors.surface : Colors.surfaceAlt,
+          }
+        ]}
       >
         {icon && (
           <Ionicons
             name={icon}
-            size={20}
+            size={18}
             color={isFocused ? Colors.primary : Colors.textTertiary}
-            style={{ marginRight: 12 }}
+            style={styles.leftIcon}
           />
         )}
         <TextInput
-          className="flex-1 text-sm text-text py-3"
-          style={style}
+          style={[styles.input, style]}
           placeholderTextColor={Colors.textTertiary}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           {...props}
         />
         {rightIcon && (
-          <TouchableOpacity onPress={onRightIconPress} className="ml-2 p-1">
+          <TouchableOpacity onPress={onRightIconPress} style={styles.rightIconBtn}>
             <Ionicons
               name={rightIcon}
-              size={20}
+              size={18}
               color={Colors.textTertiary}
             />
           </TouchableOpacity>
         )}
       </View>
-      {error && <Text className="text-xs text-danger mt-1 ml-1">{error}</Text>}
+      {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
 }
 
-
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: Spacing.md,
+  },
+  label: {
+    fontSize: Fonts.sizes.sm,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: Spacing.sm,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: Radii.sm,
+    borderWidth: 1,
+    paddingHorizontal: Spacing.md,
+    height: 48,
+  },
+  leftIcon: {
+    marginRight: Spacing.sm,
+  },
+  input: {
+    flex: 1,
+    height: '100%',
+    color: Colors.text,
+    fontSize: Fonts.sizes.md,
+  },
+  rightIconBtn: {
+    marginLeft: Spacing.xs,
+    padding: Spacing.xs,
+  },
+  errorText: {
+    fontSize: Fonts.sizes.xs,
+    color: Colors.danger,
+    marginTop: 4,
+    fontWeight: '600',
+  },
+});

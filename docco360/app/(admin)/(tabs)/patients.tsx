@@ -5,6 +5,8 @@ import {
   StyleSheet,
   FlatList,
   RefreshControl,
+  TextInput,
+  TouchableOpacity,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +20,7 @@ export default function AdminPatientsScreen() {
   const [patients, setPatients] = useState<AdminPatient[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchPatients = useCallback(async () => {
     try {
@@ -34,6 +37,15 @@ export default function AdminPatientsScreen() {
   useEffect(() => {
     fetchPatients();
   }, [fetchPatients]);
+
+  const filteredPatients = patients.filter((pat) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      pat.name.toLowerCase().includes(query) ||
+      pat.email.toLowerCase().includes(query) ||
+      (pat.patientProfile?.phone && pat.patientProfile.phone.includes(searchQuery))
+    );
+  });
 
   if (loading) return <LoadingScreen />;
 
@@ -94,11 +106,28 @@ export default function AdminPatientsScreen() {
       {/* Frameless Header */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
         <Text style={styles.title}>Patients List</Text>
-        <Text style={styles.subtitle}>{patients.length} patients registered</Text>
+        <Text style={styles.subtitle}>{filteredPatients.length} patients found</Text>
+      </View>
+
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={18} color={Colors.textTertiary} style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search patients by name, email..."
+          placeholderTextColor={Colors.textTertiary}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
+            <Ionicons name="close-circle" size={16} color={Colors.textTertiary} />
+          </TouchableOpacity>
+        )}
       </View>
 
       <FlatList
-        data={patients}
+        data={filteredPatients}
         keyExtractor={(item) => item.id}
         renderItem={renderPatient}
         contentContainerStyle={styles.list}
@@ -112,7 +141,7 @@ export default function AdminPatientsScreen() {
             tintColor={Colors.primary}
           />
         }
-        ListEmptyComponent={<EmptyState title="No Patients" subtitle="No patient registrations yet" />}
+        ListEmptyComponent={<EmptyState title="No Patients" subtitle="No patient registrations match your query" />}
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -139,17 +168,41 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: 2,
   },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: Radii.sm,
+    marginHorizontal: Spacing.xl,
+    marginBottom: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    height: 44,
+  },
+  searchIcon: {
+    marginRight: Spacing.sm,
+  },
+  searchInput: {
+    flex: 1,
+    height: '100%',
+    color: Colors.text,
+    fontSize: Fonts.sizes.md,
+  },
+  clearButton: {
+    padding: Spacing.xs,
+  },
   list: {
     paddingHorizontal: Spacing.xl,
     paddingBottom: Spacing.xxxl,
   },
   card: {
     backgroundColor: Colors.card,
-    borderRadius: Radii.lg,
+    borderRadius: Radii.sm,
     padding: Spacing.xl,
     marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(194, 198, 213, 0.3)',
+    borderColor: Colors.border,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -176,7 +229,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.lg,
     paddingTop: Spacing.md,
     borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
+    borderTopColor: Colors.borderLight,
   },
   detailRow: {
     flexDirection: 'row',
@@ -203,4 +256,3 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
-

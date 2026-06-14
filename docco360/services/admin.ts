@@ -2,19 +2,15 @@ import { apiRequest } from './api';
 import type { Appointment } from './doctor';
 
 export type DoctorApprovalStatus =
-  | 'PHASE1_PENDING'
-  | 'PHASE1_APPROVED'
-  | 'REJECTED'
-  | 'PHASE2_PENDING'
-  | 'PHASE2_APPROVED'
-  | 'PHASE2_REJECTED';
+  | 'NEEDS_DETAILS'
+  | 'PENDING'
+  | 'APPROVED'
+  | 'REJECTED';
 
 export interface AdminStats {
   totalDoctors: number;
   activeDoctors: number;
   pendingApprovals: number;
-  phase1Pending: number;
-  phase2Pending: number;
   totalPatients: number;
   totalAppointments: number;
   confirmedAppointments: number;
@@ -32,7 +28,6 @@ export interface AdminDoctor {
   doctorProfile: {
     approvalStatus: DoctorApprovalStatus;
     rejectionReason: string | null;
-    phase2RejectionReason: string | null;
     specializations: string[];
     experience: number;
     consultationFee: number;
@@ -44,6 +39,49 @@ export interface AdminDoctor {
   _count: {
     doctorAppointments: number;
   };
+}
+
+export type AnalyticsPeriod = '7d' | '30d' | '90d' | '12m';
+
+export interface RevenuePoint {
+  date: string;
+  amount: number;
+}
+
+export interface RegistrationPoint {
+  date: string;
+  doctors: number;
+  patients: number;
+}
+
+export interface AppointmentPoint {
+  date: string;
+  confirmed: number;
+  completed: number;
+  cancelled: number;
+}
+
+export interface TopDoctor {
+  id: string;
+  name: string;
+  revenue: number;
+  appointments: number;
+  specializations: string[];
+}
+
+export interface SpecializationCount {
+  specialization: string;
+  count: number;
+}
+
+export interface AnalyticsData {
+  revenueByDay: RevenuePoint[];
+  registrationsByDay: RegistrationPoint[];
+  appointmentsByDay: AppointmentPoint[];
+  topDoctors: TopDoctor[];
+  specializationDistribution: SpecializationCount[];
+  completionRate: number;
+  avgRevenuePerAppointment: number;
 }
 
 export interface AdminPatient {
@@ -71,31 +109,23 @@ export const adminService = {
     return apiRequest<AdminDoctor[]>('/admin/doctors');
   },
 
-  // ── Phase 1 ──
-  async approvePhase1(id: string): Promise<{ message: string }> {
-    return apiRequest<{ message: string }>(`/admin/doctors/${id}/approve-phase1`, {
+  // Doctor Verification Actions
+  async approveDoctor(id: string): Promise<{ message: string }> {
+    return apiRequest<{ message: string }>(`/admin/doctors/${id}/approve`, {
       method: 'PATCH',
     });
   },
 
-  async rejectPhase1(id: string, reason?: string): Promise<{ message: string }> {
-    return apiRequest<{ message: string }>(`/admin/doctors/${id}/reject-phase1`, {
+  async rejectDoctor(id: string, reason?: string): Promise<{ message: string }> {
+    return apiRequest<{ message: string }>(`/admin/doctors/${id}/reject`, {
       method: 'PATCH',
       body: { reason },
     });
   },
 
-  // ── Phase 2 ──
-  async approvePhase2(id: string): Promise<{ message: string }> {
-    return apiRequest<{ message: string }>(`/admin/doctors/${id}/approve-phase2`, {
-      method: 'PATCH',
-    });
-  },
-
-  async rejectPhase2(id: string, reason?: string): Promise<{ message: string }> {
-    return apiRequest<{ message: string }>(`/admin/doctors/${id}/reject-phase2`, {
-      method: 'PATCH',
-      body: { reason },
+  async getAnalytics(period: AnalyticsPeriod = '30d'): Promise<AnalyticsData> {
+    return apiRequest<AnalyticsData>('/admin/analytics', {
+      params: { period },
     });
   },
 

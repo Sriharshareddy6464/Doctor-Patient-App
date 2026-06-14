@@ -12,15 +12,8 @@ export interface DoctorProfile {
   availableFrom: string | null;
   availableTo: string | null;
   licenseNumber: string | null;
-  phase2RejectionReason: string | null;
   canTakeAppointments: boolean;
-  approvalStatus:
-    | 'PHASE1_PENDING'
-    | 'PHASE1_APPROVED'
-    | 'REJECTED'
-    | 'PHASE2_PENDING'
-    | 'PHASE2_APPROVED'
-    | 'PHASE2_REJECTED';
+  approvalStatus: 'NEEDS_DETAILS' | 'PENDING' | 'APPROVED' | 'REJECTED';
   rejectionReason: string | null;
   createdAt: string;
   updatedAt: string;
@@ -116,10 +109,10 @@ export const doctorService = {
     });
   },
 
-  async createTimeSlots(date: string, startTime: string, endTime: string): Promise<TimeSlot[]> {
+  async createTimeSlots(date: string, startTime: string, endTime: string, endDate?: string): Promise<TimeSlot[]> {
     return apiRequest<TimeSlot[]>('/doctor/time-slots', {
       method: 'POST',
-      body: { date, startTime, endTime },
+      body: { date, startTime, endTime, endDate },
     });
   },
 

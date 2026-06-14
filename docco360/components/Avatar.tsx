@@ -20,31 +20,32 @@ export function Avatar({ name, size = 48, color }: AvatarProps) {
 
   return (
     <View
-      className="justify-center items-center"
       style={[
         {
           width: size,
           height: size,
           borderRadius: size / 2,
           backgroundColor: bgColor,
+          justifyContent: 'center',
+          alignItems: 'center',
         },
       ]}
     >
-      <Text className="text-white font-bold" style={[{ fontSize: size * 0.38 }]}>{initials}</Text>
+      <Text style={[{ fontSize: size * 0.38, color: '#fff', fontWeight: '700' }]}>{initials}</Text>
     </View>
   );
 }
 
 function getColorForName(name: string): string {
   const colors = [
-    '#1A6FEF',
-    '#0D47A1',
-    '#4FC3F7',
-    '#10B981',
-    '#8B5CF6',
-    '#F59E0B',
-    '#EC4899',
-    '#06B6D4',
+    Colors.primary,
+    Colors.primaryDark,
+    Colors.primaryDeep,
+    '#71717a', // zinc-500
+    '#4b5563', // gray-600
+    Colors.success,
+    '#6366f1', // indigo-500
+    '#06b6d4', // cyan-500
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -52,5 +53,3 @@ function getColorForName(name: string): string {
   }
   return colors[Math.abs(hash) % colors.length];
 }
-
-
