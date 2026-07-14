@@ -3,8 +3,18 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import apiRoutes from "./routes";
 import { env } from "./config/env";
+import { metricsMiddleware } from "./metricsMiddleware";
+import { register } from "./metrics";
+
 
 const app: Application = express();
+
+app.use(metricsMiddleware);
+
+app.get("/metrics", async (_, res) => {
+  res.set("Content-Type", register.contentType);
+  res.end(await register.metrics());
+});
 
 // CORS — allow only the configured frontend origin
 const allowedOrigins = env.FRONTEND_URL.split(",").map((o) => o.trim());
