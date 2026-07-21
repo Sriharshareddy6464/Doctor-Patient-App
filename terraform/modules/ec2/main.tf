@@ -14,11 +14,16 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-# SSH Key Pair
+# Automatically generate 4096-bit RSA SSH Private Key
+resource "tls_private_key" "key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+# Register Public Key with AWS Key Pair
 resource "aws_key_pair" "this" {
-  count      = var.ssh_public_key != "" ? 1 : 0
   key_name   = "docco-${var.environment}-key"
-  public_key = var.ssh_public_key
+  public_key = tls_private_key.key.public_key_openssh
 
   tags = {
     Name        = "docco-${var.environment}-key"
@@ -27,13 +32,20 @@ resource "aws_key_pair" "this" {
   }
 }
 
+# Save Private Key locally into terraform/ folder as docco-<env>-key.pem
+resource "local_file" "private_key" {
+  content         = tls_private_key.key.private_key_pem
+  filename        = "${path.root}/docco-${var.environment}-key.pem"
+  file_permission = "0600"
+}
+
 # Bastion Host (Public Subnet)
 resource "aws_instance" "bastion" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = "t3.micro"
   subnet_id                   = var.public_subnet_id
   vpc_security_group_ids      = [var.bastion_sg_id]
-  key_name                    = var.ssh_public_key != "" ? aws_key_pair.this[0].key_name : null
+  key_name                    = aws_key_pair.this.key_name
   associate_public_ip_address = true
 
   root_block_device {
@@ -56,7 +68,7 @@ resource "aws_instance" "backend" {
   instance_type          = var.instance_type
   subnet_id              = var.private_subnet_id
   vpc_security_group_ids = [var.backend_sg_id]
-  key_name               = var.ssh_public_key != "" ? aws_key_pair.this[0].key_name : null
+  key_name               = aws_key_pair.this.key_name
 
   root_block_device {
     volume_size           = 20
