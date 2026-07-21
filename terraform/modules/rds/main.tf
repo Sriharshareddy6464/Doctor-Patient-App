@@ -20,7 +20,7 @@ resource "aws_db_parameter_group" "ssl" {
 resource "aws_db_instance" "this" {
   identifier             = "docco-${var.environment}-postgres"
   engine                 = "postgres"
-  engine_version         = "16.1"
+  engine_version         = "16"
   instance_class         = var.instance_class
   allocated_storage      = var.allocated_storage
   max_allocated_storage  = 100
