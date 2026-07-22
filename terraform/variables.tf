@@ -43,7 +43,7 @@ variable "admin_ip" {
 variable "instance_type" {
   description = "Backend EC2 instance type"
   type        = string
-  default     = "t2.micro"
+  default     = "t3.micro"
 }
 
 variable "ssh_public_key" {
